@@ -1,7 +1,10 @@
 import type { Request } from 'express';
 import { describe, expect, it } from 'vitest';
 
+import { getFixture } from '../../utils';
+import { getArmamentDispatcher, updateArmamentDispatcher } from '../armament/trial-armament-dispatcher';
 import type { PlanningChange } from '../execution/planning-changes-store';
+import { applyPlanningChanges, createPlanningChanges } from '../execution/planning-changes-store';
 import { getAcceptedChanges, resolveRevision } from './planning-revision';
 import {
   projectArmament,
@@ -41,6 +44,23 @@ function change(overrides: Partial<PlanningChange>): PlanningChange {
 }
 
 describe('resolveRevision', () => {
+  it('should use the execution progress shot identities in the armament fixture', () => {
+    const progress = getFixture<{
+      series: { seriesId: string; shots: { shotId: string; status: string }[] }[];
+    }>('fixtures/execution', 'execution-progress-fixture.json');
+    const armament = getArmamentDispatcher(request({ revision: 'execution' }, 'armament-identity-regression'));
+    const progressShots = new Set(progress.series.flatMap((series) => series.shots.map((shot) => shot.shotId)));
+    const armamentShots = armament.series.flatMap((series) => series.shots.map((shot) => shot.shotId));
+    const firedShots = progress.series.flatMap((series) =>
+      series.shots.filter((shot) => shot.status === 'FIRED').map((shot) => shot.shotId),
+    );
+
+    expect(armamentShots.length).toBeGreaterThan(0);
+    expect(armamentShots.every((shotId) => progressShots.has(shotId))).toBe(true);
+    expect(firedShots.length).toBeGreaterThan(0);
+    expect(firedShots.every((shotId) => armamentShots.includes(shotId))).toBe(true);
+  });
+
   it('should default to baseline when the param is missing', () => {
     expect(resolveRevision(request({}))).toBe('baseline');
   });
@@ -68,7 +88,7 @@ describe('getAcceptedChanges', () => {
 });
 
 describe('projectors', () => {
-  it('should project accepted conditions by shot label without mutating the baseline', () => {
+  it('should project conditions by resourceId instead of display labels or shot metadata', () => {
     const baseline = {
       series: [
         {
@@ -80,15 +100,24 @@ describe('projectors', () => {
       ],
     };
 
-    const projected = projectConditions(baseline, [change({})]);
+    const projected = projectConditions(baseline, [change({ resourceId: 's1', shotId: 's2', affectedShots: ['D2'] })]);
 
     expect(projected.series[0]?.shots?.map((s) => s['elevation'])).toEqual([50, 45]);
     expect(baseline.series[0]?.shots[0]?.elevation).toBe(45);
   });
 
+  it('should project planning-info unit changes onto the conditions units object', () => {
+    const baseline = { units: { elevation: 'DEGREES' }, series: [] };
+    const projected = projectConditions(baseline, [
+      change({ resourceType: 'PLANNING_INFO', field: 'elevationUnit', newValue: 'MILS' }),
+    ]);
+
+    expect(projected.units.elevation).toBe('MILS');
+  });
+
   it('should ignore fields that do not exist in the baseline resource', () => {
     const baseline = { series: [{ shots: [{ shotId: 's1', globalNumber: 1, elevation: 45 }] }] };
-    expect(projectConditions(baseline, [change({ field: 'unknownField' })])).toEqual(baseline);
+    expect(projectConditions(baseline, [change({ resourceId: 's1', field: 'unknownField' })])).toEqual(baseline);
   });
 
   it('should project planning info top-level fields', () => {
@@ -96,6 +125,23 @@ describe('projectors', () => {
       change({ resourceType: 'PLANNING_INFO', field: 'goal', newValue: 'new' }),
     ]);
     expect(projected.goal).toBe('new');
+  });
+
+  it('should project flattened planning-info paths into nested date-control and rating-criteria fields', () => {
+    const baseline = {
+      dateControl: { maxEmissionDates: 3, daysSignReport: 7 },
+      ratingCriteria: { v0c: { useful1Min: 10 } },
+      ratingCriteriaUnits: { speedUnit: 'M_S' },
+    };
+    const projected = projectPlanningInfo(baseline, [
+      change({ resourceType: 'PLANNING_INFO', field: 'maxEmissionDates', newValue: '5' }),
+      change({ resourceType: 'PLANNING_INFO', field: 'ratingCriteria.v0c.useful1Min', newValue: '12.5' }),
+      change({ resourceType: 'PLANNING_INFO', field: 'speedUnit', newValue: 'KM_H' }),
+    ]);
+
+    expect(projected.dateControl.maxEmissionDates).toBe(5);
+    expect(projected.ratingCriteria.v0c.useful1Min).toBe(12.5);
+    expect(projected.ratingCriteriaUnits.speedUnit).toBe('KM_H');
   });
 
   it('should project munition configuration and component changes by resource id', () => {
@@ -110,26 +156,141 @@ describe('projectors', () => {
     expect(projected.series[0]?.configurations?.[0]?.components?.[0]?.['batch']).toBe('Y');
   });
 
-  it('should project armament changes only for the matching shot id', () => {
+  it('should never substitute shotId for armament resourceId', () => {
     const baseline = {
       series: [
         {
           shots: [
-            { shotId: 's1', armament: { observations: 'a' } },
-            { shotId: 's2', armament: { observations: 'a' } },
+            { shotId: 's1', armament: { id: 'armament-1', observations: 'a' } },
+            { shotId: 's2', armament: { id: 'armament-2', observations: 'a' } },
           ],
         },
       ],
     };
     const projected = projectArmament(baseline, [
-      change({ resourceType: 'ARMAMENT', shotId: 's2', field: 'observations', newValue: 'b' }),
+      change({ resourceType: 'ARMAMENT', resourceId: 's2', shotId: 's2', field: 'observations', newValue: 'b' }),
     ]);
-    expect(projected.series[0]?.shots?.map((s) => s.armament?.['observations'])).toEqual(['a', 'b']);
+    expect(projected).toEqual(baseline);
+  });
+
+  it('should distinguish armament assignment IDs even when weapons and tubes are shared', () => {
+    const baseline = {
+      series: [
+        {
+          shots: [
+            {
+              shotId: 's1',
+              armament: { id: 'armament-1', weaponExternalId: 101, tubeExternalId: 501, observations: 'a' },
+            },
+            {
+              shotId: 's2',
+              armament: { id: 'armament-2', weaponExternalId: 101, tubeExternalId: 501, observations: 'a' },
+            },
+          ],
+        },
+      ],
+    };
+    const projected = projectArmament(baseline, [
+      change({
+        resourceType: 'ARMAMENT',
+        resourceId: 'armament-2',
+        shotId: 's1',
+        field: 'observations',
+        newValue: 'b',
+      }),
+    ]);
+
+    expect(projected.series[0]?.shots.map((shot) => shot.armament.observations)).toEqual(['a', 'b']);
+    expect(baseline.series[0]?.shots.map((shot) => shot.armament.observations)).toEqual(['a', 'a']);
+  });
+
+  it('should project armament changes by armament resource id', () => {
+    const baseline = {
+      series: [{ shots: [{ shotId: 's1', armament: { id: 'armament-1', tubeLifePercentage: 75 } }] }],
+    };
+    const projected = projectArmament(baseline, [
+      change({
+        resourceType: 'ARMAMENT',
+        resourceId: 'armament-1',
+        shotId: null,
+        field: 'lifeUsefulPercentage',
+        newValue: '61.5',
+      }),
+    ]);
+
+    expect(projected.series[0]?.shots[0]?.armament?.['tubeLifePercentage']).toBe(61.5);
   });
 
   it('should ignore non accepted changes via getAcceptedChanges filter', () => {
     const draft = change({ status: 'DRAFT' });
     expect([draft].filter((c) => c.status === 'ACCEPTED')).toEqual([]);
+  });
+});
+
+describe('armament identity in mock persistence', () => {
+  it('should expose stable assignment UUIDs that differ from shot and catalog identities', () => {
+    const baseline = getArmamentDispatcher(request({ revision: 'baseline' }, 'armament-resource-identities'));
+    const shots = baseline.series.flatMap((series) => series.shots);
+    const ids = shots.map((shot) => shot.armament?.id);
+
+    expect(shots.length).toBeGreaterThan(0);
+    expect(new Set(ids).size).toBe(shots.length);
+    for (const shot of shots) {
+      expect(shot.armament?.id).toMatch(/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/);
+      expect(shot.armament?.id).not.toBe(shot.shotId);
+      expect(shot.armament?.id).not.toBe(String(shot.armament?.weaponExternalId));
+      expect(shot.armament?.id).not.toBe(String(shot.armament?.tubeExternalId));
+    }
+  });
+
+  it('should create and apply an armament change by assignment ID without mutating baseline', () => {
+    const trialId = 'armament-create-apply-roundtrip';
+    const baseline = structuredClone(getArmamentDispatcher(request({ revision: 'baseline' }, trialId)));
+    const target = baseline.series[0]?.shots[1];
+    if (!target?.armament) throw new Error('Expected persisted armament assignment');
+    const created = createPlanningChanges(trialId, [
+      {
+        resourceType: 'ARMAMENT',
+        resourceId: target.armament.id,
+        field: 'observations',
+        operation: 'UPDATE',
+        oldValue: target.armament.observations ?? null,
+        newValue: 'Updated through planning changes',
+      },
+    ]);
+    const draft = created?.[0];
+    if (!draft) throw new Error('Expected created armament change');
+    expect(draft.resourceId).toBe(target.armament.id);
+    expect(draft.shotId).toBeNull();
+    applyPlanningChanges(trialId, [{ id: draft.id, requiresApproval: false, requestClient: false }]);
+
+    const projected = getArmamentDispatcher(request({ revision: 'execution' }, trialId));
+    const shots = projected.series.flatMap((series) => series.shots);
+    expect(shots.find((shot) => shot.shotId === target.shotId)?.armament).toEqual({
+      ...target.armament,
+      observations: 'Updated through planning changes',
+    });
+    expect(shots.filter((shot) => shot.shotId !== target.shotId)).toEqual(
+      baseline.series.flatMap((series) => series.shots).filter((shot) => shot.shotId !== target.shotId),
+    );
+    expect(getArmamentDispatcher(request({ revision: 'baseline' }, trialId))).toEqual(baseline);
+  });
+
+  it('should preserve armament identity when ordinary planning updates change its fields', () => {
+    const trialId = 'armament-update-preserves-identity';
+    const baseline = getArmamentDispatcher(request({ revision: 'baseline' }, trialId));
+    const target = baseline.series[0]?.shots[0];
+    if (!target?.armament) throw new Error('Expected armament assignment');
+    const armamentId = target.armament.id;
+    const update = request({}, trialId);
+    update.body = { shots: [{ shotId: target.shotId, weaponExternalId: 909, observations: 'Updated fields' }] };
+
+    const result = updateArmamentDispatcher(update);
+    expect(result.series[0]?.shots[0]?.armament).toMatchObject({
+      id: armamentId,
+      weaponExternalId: 909,
+      observations: 'Updated fields',
+    });
   });
 });
 

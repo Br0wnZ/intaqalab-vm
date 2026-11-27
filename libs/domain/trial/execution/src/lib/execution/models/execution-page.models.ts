@@ -1,8 +1,11 @@
+import type { TrialStatus } from '@intaqalab/models';
+
 export interface ExecutionHeaderData {
   code: string;
   client: string;
   project: string;
   status: string;
+  statusValue: TrialStatus | undefined;
 }
 
 export interface ExecutionShotHistoryItem {

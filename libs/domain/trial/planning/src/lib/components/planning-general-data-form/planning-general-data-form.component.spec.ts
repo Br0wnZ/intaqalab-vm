@@ -20,6 +20,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
+import type { PlanningFormSnapshotEvent } from '../../models/planning-shell.model';
 import { PlanningGeneralDataFormComponent } from './planning-general-data-form.component';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -49,6 +50,8 @@ interface SetupOptions {
   isValidable?: boolean;
   /** Errores de validación devueltos por el backend, si los hay. */
   validationErrors?: string[];
+  detectPlanningChanges?: boolean;
+  onFormSnapshotChanged?: (event: PlanningFormSnapshotEvent) => void;
 }
 
 const setup = async (options: SetupOptions = {}) => {
@@ -79,6 +82,8 @@ const setup = async (options: SetupOptions = {}) => {
 
   const user = userEvent.setup();
   const view = await render(PlanningGeneralDataFormComponent, {
+    inputs: { detectPlanningChanges: options.detectPlanningChanges ?? false },
+    on: options.onFormSnapshotChanged ? { formSnapshotChanged: options.onFormSnapshotChanged } : undefined,
     providers: [
       provideHttpClient(),
       provideHttpClientTesting(),
@@ -102,6 +107,29 @@ describe('PlanningGeneralDataFormComponent', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it('should emit baseline and current Signal Forms models when execution modification is enabled', async () => {
+    const snapshots: PlanningFormSnapshotEvent[] = [];
+    const { view } = await setup({
+      isValidable: true,
+      detectPlanningChanges: true,
+      onFormSnapshotChanged: (event) => snapshots.push(event),
+    });
+
+    await waitFor(() => expect(snapshots.length).toBeGreaterThan(0));
+    const initialSnapshot = snapshots.at(0);
+    if (!initialSnapshot) throw new Error('Expected initial general-data snapshot');
+    const component = view.fixture.componentInstance;
+    component.formModel.update((model) => ({ ...model, goal: 'Updated trial goal' }));
+    view.fixture.detectChanges();
+
+    await waitFor(() => expect(snapshots.at(-1)?.current).toMatchObject({ model: { goal: 'Updated trial goal' } }));
+    const latestSnapshot = snapshots.at(-1);
+    if (!latestSnapshot) throw new Error('Expected updated general-data snapshot');
+    expect(latestSnapshot.section).toBe('general-data');
+    expect(latestSnapshot.baseline).toEqual(initialSnapshot.baseline);
+    expect(latestSnapshot.valid).toBe(component.generalDataForm().valid());
   });
 
   // ── Initial rendering ──────────────────────────────────────────────────────

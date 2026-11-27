@@ -39,6 +39,7 @@ const createArmamentResponse = (seriesCount = 2, shotsPerSeries = 2): TrialArmam
     shots: Array.from({ length: shotsPerSeries }, (_, shotIdx) => ({
       shotId: `shot-${seriesIdx + 1}-${shotIdx + 1}`,
       armament: {
+        id: `armament-${seriesIdx + 1}-${shotIdx + 1}`,
         itemType: SpecimenType.Weapon,
         weaponType: SpecimenType.Weapon,
         weaponName: `Weapon ${shotIdx + 1}`,
@@ -116,6 +117,52 @@ describe('Armament', () => {
   };
 
   describe('Initial rendering', () => {
+    it('should disable every armament control for an executed shot while keeping other rows editable', async () => {
+      const { view } = await runSetup();
+      view.fixture.componentRef.setInput('detectPlanningChanges', true);
+      view.fixture.componentRef.setInput('executedShotIds', ['shot-1-1']);
+      view.fixture.detectChanges();
+
+      await waitFor(() => {
+        const rows = view.fixture.debugElement.queryAll(By.directive(ArmamentRow));
+        const firedRow = rows.find((row) => row.injector.get(ArmamentRow).shot().shotId === 'shot-1-1');
+        const editableRow = rows.find((row) => row.injector.get(ArmamentRow).shot().shotId === 'shot-1-2');
+        if (!firedRow || !editableRow) throw new Error('Expected fired and editable armament rows');
+        const firedControls = firedRow.injector.get(ArmamentRow);
+        const editableControls = editableRow.injector.get(ArmamentRow);
+
+        expect(firedControls.readonly()).toBe(true);
+        expect(firedControls.formPath().armament.weaponType().disabled()).toBe(true);
+        expect(firedControls.formPath().armament.weaponExternalId().disabled()).toBe(true);
+        expect(firedControls.formPath().armament.tubeExternalId().disabled()).toBe(true);
+        expect(firedControls.formPath().armament.isInstrumented().disabled()).toBe(true);
+        expect(firedControls.formPath().armament.tubeLifePercentage().disabled()).toBe(true);
+        expect(editableControls.readonly()).toBe(false);
+        expect(editableControls.formPath().armament.weaponType().disabled()).toBe(false);
+      });
+    });
+
+    it('should fill the parent width in the planning modification dialog without using max-content width', async () => {
+      const { view } = await runSetup();
+      view.fixture.componentRef.setInput('detectPlanningChanges', true);
+      view.fixture.detectChanges();
+
+      const tables = view.fixture.debugElement.queryAll(By.css('table'));
+      expect(tables.length).toBeGreaterThan(0);
+      for (const table of tables) {
+        const element = table.nativeElement as HTMLTableElement;
+        expect(element).toHaveClass('w-full');
+        expect(element).not.toHaveClass('min-w-max');
+      }
+
+      view.fixture.componentRef.setInput('detectPlanningChanges', false);
+      view.fixture.detectChanges();
+
+      for (const table of view.fixture.debugElement.queryAll(By.css('table'))) {
+        expect(table.nativeElement as HTMLTableElement).not.toHaveClass('w-full');
+      }
+    });
+
     it('should render the trial code heading', async () => {
       await runSetup();
       expect(screen.getByText('TRIAL-001')).toBeInTheDocument();

@@ -2,6 +2,8 @@ import type { SpecimenItem } from './catalog.model';
 import type { SpecimenType } from './specimen.model';
 
 export type ArmamentData = {
+  /** UUID de la asignación publicado por backend; resourceId de cambios ARMAMENT. */
+  id?: string;
   weaponType?: SpecimenType | '';
   /** Alias que devuelve el backend en el GET en lugar de weaponType */
   itemType?: string;
@@ -61,6 +63,8 @@ export type ArmamentSerieShot = {
 };
 
 export type ArmamentSerieShotDetail = {
+  /** UUID persistido de armament; ausente únicamente en filas sin asignación persistida. */
+  id?: string;
   weaponType: SpecimenType | '';
   weaponName: string;
   /** ID de catálogo usado en el select — se convierte a number al enviar al API */

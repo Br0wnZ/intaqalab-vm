@@ -7,6 +7,7 @@ import {
   effect,
   inject,
   input,
+  output,
   signal,
   untracked,
 } from '@angular/core';
@@ -21,6 +22,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 
 import { ArmamentStore } from '../../+state/armament.store';
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
+import type { PlanningFormSnapshotEvent } from '../../models/planning-shell.model';
 import type { ArmamentSerie, ArmamentSerieShot, MassiveConfigData } from '../../utils-models/armament.model';
 import { SpecimenType } from '../../utils-models/specimen.model';
 import { ArmamentDialogService } from './armament-dialog.service';
@@ -130,15 +132,18 @@ type ArmamentFormType = FieldTree<ArmamentSerie[]>;
                   </mat-panel-title>
                 </mat-expansion-panel-header>
 
-                <div class="py-4 bg-white -mx-6 -mb-6 rounded-t-lg">
+                <div class="py-4 bg-white -mb-6 rounded-t-lg" [class.-mx-6]="!detectPlanningChanges()">
                   <div class="flex items-center justify-between mb-4 px-6">
                     <h3 class="font-semibold text-sm text-gray-700">
                       {{ 'TRIAL_PLANNING.ARMAMENT.TABLE_TITLE' | translate }}
                     </h3>
                   </div>
 
-                  <div class="overflow-x-auto">
-                    <table class="min-w-full text-xs text-left border-collapse">
+                  <div class="min-w-0 overflow-x-auto">
+                    <table
+                      class="min-w-full text-xs text-left border-collapse"
+                      [class.w-full]="detectPlanningChanges()"
+                    >
                       <thead>
                         <tr class="border-b border-gray-200 bg-gray-100">
                           <th class="text-xs font-medium text-gray-600 px-6 py-3">
@@ -170,7 +175,7 @@ type ArmamentFormType = FieldTree<ArmamentSerie[]>;
                             inta-armament-row
                             class="border-b border-gray-200 hover:bg-gray-50"
                             [formPath]="getShotPath(i, j)"
-                            [readonly]="readonly()"
+                            [readonly]="isShotReadonly(shot.shotId)"
                             [shotIndex]="shot.globalNumber || j + 1"
                             [shot]="shot"
                             (shotChange)="onShotChange(i, j, $event)"
@@ -184,7 +189,7 @@ type ArmamentFormType = FieldTree<ArmamentSerie[]>;
             }
           </mat-accordion>
 
-          @if (!readonly()) {
+          @if (!readonly() && !detectPlanningChanges()) {
             <div class="flex justify-end gap-3 mt-6">
               <button mat-flat-button [disabled]="hasToBeDisabled()" (click)="saveForm()">
                 {{ 'TRIAL_PLANNING.ARMAMENT.FOOTER.SAVE_DRAFT' | translate }}
@@ -204,6 +209,9 @@ type ArmamentFormType = FieldTree<ArmamentSerie[]>;
 export class Armament implements OnInit {
   /** Si true, el componente está en modo solo lectura (el usuario no puede editar) */
   readonly readonly = input<boolean>(false);
+  readonly detectPlanningChanges = input<boolean>(false);
+  readonly executedShotIds = input<ReadonlyArray<string>>([]);
+  readonly formSnapshotChanged = output<PlanningFormSnapshotEvent>();
 
   readonly #armamentStore = inject(ArmamentStore);
   readonly #planningGeneralDataStore = inject(PlanningGeneralDataStore);
@@ -222,12 +230,13 @@ export class Armament implements OnInit {
   readonly trialStatus = computed(() => this.#planningGeneralDataStore.fireTrial()?.status);
 
   readonly armamentSignal = signal<ArmamentSerie[]>([]);
+  readonly #initialRawArmament = signal<unknown>([]);
 
   readonly isLoading = this.#armamentStore.isLoading;
   readonly isSaving = this.#armamentStore.isUpdatingArmament;
   readonly updateStatus = this.#armamentStore.updateArmamentStatus;
   readonly hasToBeDisabled = computed(() => {
-    const hasUnchangedData = JSON.stringify(this.armamentSignal()) === JSON.stringify(this.#initialArmamentData);
+    const hasUnchangedData = JSON.stringify(this.armamentSignal()) === JSON.stringify(this.#initialArmamentData());
     const isLoadingDenominations =
       this.isLoadingWeaponDenominations() || this.isLoadingMortarDenominations() || this.isLoadingTubeDenominations();
 
@@ -257,7 +266,7 @@ export class Armament implements OnInit {
     return mergeCatalogOptions(denominations, existing, 'tubeExternalId', 'tubeName', 'TUBE');
   });
 
-  #initialArmamentData: ArmamentSerie[] = [];
+  readonly #initialArmamentData = signal<ArmamentSerie[]>([]);
   #armamentApplied = false;
   #massiveDialogRef: MatDialogRef<MassiveShotsConfigurationDialog, MassiveConfigData | undefined> | null = null;
 
@@ -272,7 +281,13 @@ export class Armament implements OnInit {
     effect(() => {
       const series = this.#planningGeneralDataStore.series();
       const seriesArmament = this.#armamentStore.seriesArmament();
-      if (!series?.length && !seriesArmament?.length) return;
+      if (!this.detectPlanningChanges() && !series?.length && !seriesArmament?.length) return;
+      if (
+        this.detectPlanningChanges() &&
+        (!this.#armamentStore.isInitialized() || this.#armamentStore.isLoadingArmament())
+      ) {
+        return;
+      }
 
       const hasArmament = !!seriesArmament?.length;
 
@@ -287,6 +302,8 @@ export class Armament implements OnInit {
         mergedSeries = mapBackendToLocal(seriesArmament);
       } else if (series && series.length > 0) {
         mergedSeries = buildSeriesFromStore(series, undefined);
+      } else if (this.detectPlanningChanges() && this.#armamentStore.isInitialized()) {
+        mergedSeries = [];
       } else {
         return;
       }
@@ -297,7 +314,8 @@ export class Armament implements OnInit {
         current.length === 0 ? mergedSeries : this.#mergeArmamentRowItems(current, mergedSeriesById);
 
       this.armamentSignal.set(updatedSeries);
-      this.#initialArmamentData = deepClone(updatedSeries);
+      this.#initialArmamentData.set(deepClone(updatedSeries));
+      this.#initialRawArmament.set(structuredClone(seriesArmament ?? []));
 
       if (hasArmament) {
         this.#armamentApplied = true;
@@ -317,6 +335,29 @@ export class Armament implements OnInit {
         this.#massiveDialogRef = null;
         this.#armamentStore.resetUpdateArmament();
       }
+    });
+
+    effect(() => {
+      if (
+        !this.detectPlanningChanges() ||
+        !this.#armamentStore.isInitialized() ||
+        this.#armamentStore.isLoadingArmament()
+      ) {
+        return;
+      }
+      this.formSnapshotChanged.emit({
+        section: 'armament',
+        baseline: { series: this.#initialArmamentData(), rawSeries: this.#initialRawArmament() },
+        current: this.armamentSignal(),
+        valueReferences: {
+          weaponExternalId: this.weaponOptions(),
+          tubeExternalId: this.tubeOptions().map((tube) => ({
+            id: tube.denominationId ?? tube.id,
+            name: tube.name,
+          })),
+        },
+        valid: this.armamentForm().valid(),
+      });
     });
 
     this.#destroyRef.onDestroy(() => {
@@ -356,7 +397,7 @@ export class Armament implements OnInit {
           },
         });
 
-        disabled(shotPath.armament.weaponType, () => this.readonly());
+        disabled(shotPath.armament.weaponType, ({ valueOf }) => this.#isShotReadonly(valueOf(shotPath.shotId)));
         disabled(shotPath.armament.weaponExternalId, ({ valueOf }) => {
           const weaponType = valueOf(shotPath.armament.weaponType)?.toLowerCase();
           const isLoadingDenominations =
@@ -364,15 +405,17 @@ export class Armament implements OnInit {
               ? this.isLoadingMortarDenominations()
               : this.isLoadingWeaponDenominations();
 
-          return this.readonly() || !weaponType || isLoadingDenominations;
+          return this.#isShotReadonly(valueOf(shotPath.shotId)) || !weaponType || isLoadingDenominations;
         });
         disabled(
           shotPath.armament.tubeExternalId,
           ({ valueOf }) =>
-            this.readonly() || !valueOf(shotPath.armament.weaponExternalId) || this.isLoadingTubeDenominations(),
+            this.#isShotReadonly(valueOf(shotPath.shotId)) ||
+            !valueOf(shotPath.armament.weaponExternalId) ||
+            this.isLoadingTubeDenominations(),
         );
-        disabled(shotPath.armament.isInstrumented, () => this.readonly());
-        disabled(shotPath.armament.tubeLifePercentage, () => this.readonly());
+        disabled(shotPath.armament.isInstrumented, ({ valueOf }) => this.#isShotReadonly(valueOf(shotPath.shotId)));
+        disabled(shotPath.armament.tubeLifePercentage, ({ valueOf }) => this.#isShotReadonly(valueOf(shotPath.shotId)));
         apply(shotPath.armament.tubeLifePercentage, percentageSchema);
       });
     });
@@ -383,7 +426,17 @@ export class Armament implements OnInit {
     return root[i].shots[j] as unknown as ShotFormPath;
   }
 
+  #isShotReadonly(shotId: string): boolean {
+    return this.readonly() || (this.detectPlanningChanges() && this.executedShotIds().includes(shotId));
+  }
+
+  protected isShotReadonly(shotId: string): boolean {
+    return this.#isShotReadonly(shotId);
+  }
+
   onShotChange(serieIndex: number, shotIndex: number, updatedShot: ArmamentSerieShot): void {
+    const shot = this.armamentSignal()[serieIndex]?.shots[shotIndex];
+    if (!shot || this.#isShotReadonly(shot.shotId)) return;
     this.armamentSignal.update((series) =>
       series.map((serie, i) => {
         if (i !== serieIndex) return serie;
@@ -414,8 +467,10 @@ export class Armament implements OnInit {
 
     if (result) {
       this.#applyMassiveConfiguration(result);
-      const shots = mapLocalToRequest(this.armamentSignal());
-      this.#armamentStore.updateArmament({ shots });
+      if (!this.detectPlanningChanges()) {
+        const shots = mapLocalToRequest(this.armamentSignal());
+        this.#armamentStore.updateArmament({ shots });
+      }
     }
   }
 
@@ -509,7 +564,7 @@ export class Armament implements OnInit {
   }
 
   saveForm(): void {
-    if (this.readonly()) {
+    if (this.readonly() || this.detectPlanningChanges()) {
       return;
     }
     if (!this.isFormValid()) {
@@ -525,6 +580,6 @@ export class Armament implements OnInit {
     if (this.readonly()) {
       return;
     }
-    this.armamentSignal.set(deepClone(this.#initialArmamentData));
+    this.armamentSignal.set(deepClone(this.#initialArmamentData()));
   }
 }

@@ -129,6 +129,24 @@ describe('SeriesAndShots', () => {
     });
   });
 
+  it('should prevent changing observations for executed shots in execution modification mode', async () => {
+    const series = createSeriesData(1, 1);
+    const firstSerie = series[0];
+    const firstShot = firstSerie?.shots[0];
+    if (!firstSerie || !firstShot) throw new Error('Expected a series with one shot');
+
+    const { view } = await runSetup(series);
+    const component = view.fixture.componentInstance;
+    view.fixture.componentRef.setInput('detectPlanningChanges', true);
+    view.fixture.componentRef.setInput('executedShotIds', [firstShot.id]);
+    view.fixture.detectChanges();
+    await waitFor(() => expect(component.shotsSets()?.length).toBe(1));
+
+    component.onShotObservationChange(firstSerie.id, firstShot.id, 'Edited observation');
+
+    expect(component.shotsSets()?.[0]?.shots[0]?.observation).toBe(firstShot.observation);
+  });
+
   describe('Data interactions', () => {
     it('should load series on initialization', async () => {
       await runSetup();

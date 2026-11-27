@@ -268,6 +268,14 @@ export function withGeneralData() {
           });
         },
 
+        reactivateExecution(fireTrialId: string): Promise<void> {
+          return executionTransitionService.reactivateExecution(fireTrialId).then(() => {
+            this.loadExecutionState(fireTrialId);
+            this.loadExecutionProgress(fireTrialId);
+            trialsService.loadById(fireTrialId);
+          });
+        },
+
         cancelExecution(fireTrialId: string, reason: string): Promise<void> {
           return executionTransitionService.cancelExecution(fireTrialId, reason).then(() => {
             this.loadExecutionState(fireTrialId);

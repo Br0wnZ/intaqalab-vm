@@ -88,7 +88,7 @@ import { ConfigurationFormComponent } from '../configuration-form/configuration-
                     mat-icon-button
                     type="button"
                     class="!text-gray-500 hover:!text-red-500"
-                    [disabled]="readonly()"
+                    [disabled]="isConfigurationReadonly(config)"
                     [attr.aria-label]="'TRIAL_PLANNING.MUNITIONS.SERIE_PANEL.DELETE_CONFIG' | translate"
                     (click)="onDeleteConfiguration(configIdx)"
                   >
@@ -104,7 +104,7 @@ import { ConfigurationFormComponent } from '../configuration-form/configuration-
               [configIndex]="configIdx"
               [shots]="shots()"
               [excludeShotIds]="getExcludeShotIds(configIdx)"
-              [readonly]="readonly()"
+              [readonly]="isConfigurationReadonly(config)"
               (configChange)="onConfigChange(configIdx, $event)"
             />
           </mat-expansion-panel>
@@ -151,6 +151,7 @@ export class SeriePanelComponent {
   readonly expanded = input(false);
 
   readonly readonly = input<boolean>(false);
+  readonly executedShotIds = input<ReadonlyArray<string>>([]);
 
   readonly serieName = computed(() => this.serie().seriesName);
 
@@ -168,9 +169,18 @@ export class SeriePanelComponent {
   });
 
   getExcludeShotIds(configIdx: number): string[] {
-    return this.configurations()
-      .filter((_, idx) => idx !== configIdx)
-      .flatMap((c) => c.assignedShotIds ?? []);
+    return [
+      ...new Set([
+        ...this.executedShotIds(),
+        ...this.configurations()
+          .filter((_, idx) => idx !== configIdx)
+          .flatMap((configuration) => configuration.assignedShotIds ?? []),
+      ]),
+    ];
+  }
+
+  protected isConfigurationReadonly(config: Configuration): boolean {
+    return this.readonly() || (config.assignedShotIds ?? []).some((shotId) => this.executedShotIds().includes(shotId));
   }
 
   onAddMunition(): void {
@@ -188,7 +198,8 @@ export class SeriePanelComponent {
   }
 
   onConfigChange(configIndex: number, config: Configuration): void {
-    if (this.readonly()) {
+    const currentConfig = this.configurations()[configIndex];
+    if (this.readonly() || (currentConfig && this.isConfigurationReadonly(currentConfig))) {
       return;
     }
     const serieIdx = this.serieIndex();
@@ -203,11 +214,11 @@ export class SeriePanelComponent {
   }
 
   async onDeleteConfiguration(configIndex: number): Promise<void> {
-    if (this.readonly()) {
+    const config = this.configurations()[configIndex];
+    if (this.readonly() || !config || this.isConfigurationReadonly(config)) {
       return;
     }
 
-    const config = this.configurations()[configIndex];
     const rawConfigName = (config as { name?: string } | undefined)?.name || String(configIndex + 1);
     const configName = this.#toTitleCase(rawConfigName);
 

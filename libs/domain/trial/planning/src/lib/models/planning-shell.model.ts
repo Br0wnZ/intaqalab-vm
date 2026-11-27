@@ -8,16 +8,22 @@ export const PLANNING_REVISION_BY_SHELL_MODE: Readonly<Record<PlanningShellMode,
   'execution-modification': 'execution',
 };
 
-export type PlanningFieldChangeAction = 'Alta' | 'Baja' | 'Modificación';
-
 export type PlanningSection =
   'general-data' | 'series-and-shots' | 'shooting-conditions' | 'munitions' | 'armament' | 'measures';
 
-export interface PlanningFieldChangeEvent {
+export interface PlanningValueReference {
+  id: string | number;
+  name: string | Readonly<Record<string, string>>;
+}
+
+/** Display-only catalogs keyed by change field. IDs remain the form and API values. */
+export type PlanningValueReferences = Readonly<Record<string, ReadonlyArray<PlanningValueReference>>>;
+
+/** Complete before/after snapshots from a tab editor. Output reflects current form state, not input history. */
+export interface PlanningFormSnapshotEvent {
   section: PlanningSection;
-  parameter: string;
-  action: PlanningFieldChangeAction;
-  previousValue: string | number | null;
-  newValue: string | number | null;
-  affectedShots: string[] | null;
+  baseline: unknown;
+  current: unknown;
+  valid?: boolean;
+  valueReferences?: PlanningValueReferences;
 }

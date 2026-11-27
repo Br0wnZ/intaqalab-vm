@@ -33,9 +33,11 @@ import { ExecutionHeader } from './execution-header/execution-header';
         [canSelectEquipment]="canSelectEquipment()"
         [canModifyPlanning]="canModifyPlanning()"
         [canViewModifications]="canViewModifications()"
+        [userRoles]="userRoles()"
         (startRequested)="startExecution()"
         (pauseRequested)="pauseExecution()"
         (resumeRequested)="resumeExecution()"
+        (reactivateRequested)="reactivateExecution()"
         (interruptRequested)="interruptExecution()"
         (cancelRequested)="cancelExecution()"
         (finishRequested)="finishExecution()"
@@ -107,6 +109,7 @@ export class Execution implements OnDestroy {
   readonly canSelectEquipment = this.#executionFacade.canSelectEquipment;
   readonly canModifyPlanning = this.#executionFacade.canModifyPlanning;
   readonly canViewModifications = this.#executionFacade.canViewModifications;
+  readonly userRoles = this.#executionFacade.userRoles;
   readonly isWidgetsPanelOpen = signal(false);
   readonly isEditMode = signal(false);
 
@@ -147,6 +150,10 @@ export class Execution implements OnDestroy {
 
   resumeExecution(): Promise<void> {
     return this.#executionFacade.resumeExecution();
+  }
+
+  reactivateExecution(): Promise<void> {
+    return this.#executionFacade.reactivateExecution();
   }
 
   interruptExecution(): Promise<void> {

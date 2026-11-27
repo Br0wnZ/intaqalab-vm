@@ -11,4 +11,8 @@ export interface ClientModificationsDialogResult {
   hasDecisions: boolean;
 }
 
+export interface PlanningModificationBlockedDialogData {
+  allowViewPending?: boolean;
+}
+
 export type PlanningModificationBlockedDialogResult = { action: 'close' } | { action: 'viewPending' };

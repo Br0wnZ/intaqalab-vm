@@ -1,5 +1,8 @@
 // Cambia este valor a false para usar un entorno remoto definido por PROXY_TARGET
-const USE_LOCAL_MOCKS = process.env['PROXY_TARGET'] === 'mocks' || process.env['VITE_MOCKS_AUTH'] === 'true' || (process.argv.some(arg => arg.includes(':mocks') || arg.includes('mocks')));
+const USE_LOCAL_MOCKS =
+  process.env['PROXY_TARGET'] === 'mocks' ||
+  process.env['VITE_MOCKS_AUTH'] === 'true' ||
+  process.argv.some((arg) => arg.includes(':mocks') || arg.includes('mocks'));
 
 const DEFAULT_REMOTE_TARGET = 'des';
 const PROXY_TARGET = USE_LOCAL_MOCKS ? 'mocks' : (process.env['PROXY_TARGET'] ?? DEFAULT_REMOTE_TARGET);
@@ -208,11 +211,14 @@ proxyConfig['^/api/fire-trials-documents-api'] = buildProxyRule({
 // Routes with 1 path segment (e.g. target-types) are center-scoped catalogs.
 proxyConfig['^/api/centers/[^/]+/planning-api'] = buildProxyRule({
   remotePathRewrite: {
+    // Keep the first center in the base URL; do not add another center segment.
+    '^/api/centers/([^/]+)/planning-api/[^/]+/fire-trials/([^/]+)/(.+)': `${PLANNING_API_BASE_PATH}/centers/$1/fire-trials/$2/$3`,
     '^/api/centers/([^/]+)/planning-api/[^/]+/([^/]+)/([^/]+)/(.+)': `${PLANNING_API_BASE_PATH}/centers/$1/fire-trials/$2/$3/$4`,
     '^/api/centers/([^/]+)/planning-api/[^/]+/([^/]+)/(.+)': `${PLANNING_API_BASE_PATH}/centers/$1/fire-trials/$2/$3`,
     '^/api/centers/([^/]+)/planning-api/[^/]+/(.+)': `${PLANNING_API_BASE_PATH}/centers/$1/$2`,
   },
   mockPathRewrite: {
+    '^/api/centers/([^/]+)/planning-api/[^/]+/fire-trials/([^/]+)/(.+)': '/api/centers/$1/fire-trials/$2/$3',
     // Strip planning-api/version/ → mock server gets /api/centers/{id}/{rest} which
     // matches existing routes (fire-trials, specimens, target-types, etc.) directly.
     '^/api/centers/([^/]+)/planning-api/[^/]+/(.+)': '/api/centers/$1/$2',

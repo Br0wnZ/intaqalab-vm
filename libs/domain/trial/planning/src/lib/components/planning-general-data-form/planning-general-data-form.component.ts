@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
+import { Component, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
 import { FormField, apply, disabled, form, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -21,6 +21,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
+import type { PlanningFormSnapshotEvent } from '../../models/planning-shell.model';
 import { PlanningPermissionsService } from '../../planning-permissions.service';
 import { type SpecimenDialogResult, SpecimenType } from '../../utils-models/specimen.model';
 import type {
@@ -494,7 +495,7 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
             </div>
           </div>
         </div>
-        @if (!readonly()) {
+        @if (!readonly() && !detectPlanningChanges()) {
           <div class="flex justify-end gap-3 mt-6">
             <button mat-flat-button [disabled]="hasToBeDisabled()" (click)="saveDraft()">
               @if (isSaving()) {
@@ -517,6 +518,8 @@ const DEFAULT_REQUERIMENTS = `- Las condiciones meteorológicas son adversas.
 export class PlanningGeneralDataFormComponent {
   /** Propagado desde el shell: true cuando el usuario no tiene permisos de edición */
   readonly readonly = input<boolean>(false);
+  readonly detectPlanningChanges = input<boolean>(false);
+  readonly formSnapshotChanged = output<PlanningFormSnapshotEvent>();
 
   readonly showRatingCriteria = signal<boolean>(false);
   readonly ratingCriteriaState = signal<RatingCriteriaModel | undefined>(undefined);
@@ -576,18 +579,34 @@ export class PlanningGeneralDataFormComponent {
     hypochelometricReviewBefore: false,
     hypochelometricReviewAfter: false,
   });
-  #initialFormModel = this.formModel();
+  readonly #initialFormModel = signal<PlanningGeneralData>(structuredClone(this.formModel()));
+  readonly #initialPlanningInfo = signal<TrialPlanningInfo | null>(null);
   #initialSelectedSpecimens: UpsertTrialPlanningInfo['specimens'] = [];
-  #initialRatingCriteria: RatingCriteriaModel | undefined;
-  #initialRatingCriteriaUnits: RatingCriteriaUnits | undefined;
-  #initialShowRatingCriteria = false;
+  readonly #initialRatingCriteria = signal<RatingCriteriaModel | undefined>(undefined);
+  readonly #initialRatingCriteriaUnits = signal<RatingCriteriaUnits | undefined>(undefined);
+  readonly #initialShowRatingCriteria = signal(false);
+
+  readonly #baselinePlanningFields = computed(() => ({
+    model: this.#initialFormModel(),
+    rawPlanningInfo: this.#initialPlanningInfo(),
+    ratingCriteria: this.#initialRatingCriteria(),
+    ratingCriteriaUnits: this.#initialRatingCriteriaUnits(),
+    showRatingCriteria: this.#initialShowRatingCriteria(),
+  }));
+
+  readonly #currentPlanningFields = computed(() => ({
+    model: this.formModel(),
+    ratingCriteria: this.ratingCriteriaState(),
+    ratingCriteriaUnits: this.ratingCriteriaUnitsState(),
+    showRatingCriteria: this.showRatingCriteria(),
+  }));
 
   readonly hasToBeDisabled = computed(() => {
     const hasUnchangedData =
-      JSON.stringify(this.formModel()) === JSON.stringify(this.#initialFormModel) &&
-      JSON.stringify(this.ratingCriteriaState()) === JSON.stringify(this.#initialRatingCriteria) &&
-      JSON.stringify(this.ratingCriteriaUnitsState()) === JSON.stringify(this.#initialRatingCriteriaUnits) &&
-      this.showRatingCriteria() === this.#initialShowRatingCriteria;
+      JSON.stringify(this.formModel()) === JSON.stringify(this.#initialFormModel()) &&
+      JSON.stringify(this.ratingCriteriaState()) === JSON.stringify(this.#initialRatingCriteria()) &&
+      JSON.stringify(this.ratingCriteriaUnitsState()) === JSON.stringify(this.#initialRatingCriteriaUnits()) &&
+      this.showRatingCriteria() === this.#initialShowRatingCriteria();
 
     return this.isSaving() || !this.generalDataForm().valid() || hasUnchangedData;
   });
@@ -609,8 +628,11 @@ export class PlanningGeneralDataFormComponent {
     disabled(f.percentageTechnicalUnits, () => this.readonly() || false);
     disabled(f.percentageEndTrial, () => this.readonly() || false);
     disabled(f.daysSignReport, () => this.readonly() || false);
-    disabled(f.specimen, () => this.readonly() || this.#store.isLoadingTypedSpecimens());
-    disabled(f.planningUser, () => this.readonly() || this.#store.isLoadingUsers());
+    disabled(
+      f.specimen,
+      () => this.readonly() || this.detectPlanningChanges() || this.#store.isLoadingTypedSpecimens(),
+    );
+    disabled(f.planningUser, () => this.readonly() || this.detectPlanningChanges() || this.#store.isLoadingUsers());
     apply(f.maxEmissionDates, boundedNumberSchema(1, 120));
     apply(f.percentageTechnicalUnits, percentageSchema);
     apply(f.percentageEndTrial, percentageSchema);
@@ -671,23 +693,27 @@ export class PlanningGeneralDataFormComponent {
     effect(() => {
       const planningInfo: TrialPlanningInfo | undefined = this.#store.planningInfo();
       if (planningInfo) {
-        const mappedModel = mapDataToFormModel(planningInfo, DEFAULT_REQUERIMENTS);
+        const mappedModel = mapDataToFormModel(
+          planningInfo,
+          this.detectPlanningChanges() ? planningInfo.requirements : DEFAULT_REQUERIMENTS,
+        );
         const selectedSpecimens = planningInfo.specimens.map((s) => ({
           specimenId: s.specimenId,
           type: s.type,
           batch: s.batch ?? '',
         }));
         this.formModel.set(mappedModel);
-        this.#initialFormModel = mappedModel;
+        this.#initialFormModel.set(structuredClone(mappedModel));
+        this.#initialPlanningInfo.set(structuredClone(planningInfo));
         this.#initialSelectedSpecimens = structuredClone(selectedSpecimens);
         this.#store.setSelectedSpecimens(selectedSpecimens);
         const ratingCriteria = structuredClone(planningInfo.ratingCriteria);
         this.ratingCriteriaState.set(ratingCriteria);
         this.ratingCriteriaUnitsState.set(planningInfo.ratingCriteriaUnits);
         const showRatingCriteria = this.#hasRatingCriteriaValues(ratingCriteria);
-        this.#initialRatingCriteria = structuredClone(ratingCriteria);
-        this.#initialRatingCriteriaUnits = structuredClone(planningInfo.ratingCriteriaUnits);
-        this.#initialShowRatingCriteria = showRatingCriteria;
+        this.#initialRatingCriteria.set(structuredClone(ratingCriteria));
+        this.#initialRatingCriteriaUnits.set(structuredClone(planningInfo.ratingCriteriaUnits));
+        this.#initialShowRatingCriteria.set(showRatingCriteria);
         this.showRatingCriteria.set(showRatingCriteria);
         untracked(() => {
           this.generalDataForm.percentageTechnicalUnits().markAsTouched();
@@ -725,9 +751,20 @@ export class PlanningGeneralDataFormComponent {
         this.formModel.update((m) => ({ ...m, specimen: mapped }));
       });
     });
+
+    effect(() => {
+      if (!this.detectPlanningChanges() || !this.#store.planningInfo()) return;
+      this.formSnapshotChanged.emit({
+        section: 'general-data',
+        baseline: this.#baselinePlanningFields(),
+        current: this.#currentPlanningFields(),
+        valid: this.generalDataForm().valid(),
+      });
+    });
   }
 
   async openSpecimenManagement(): Promise<void> {
+    if (this.detectPlanningChanges()) return;
     const specimens = this.#cachedSpecimens();
     this.generalDataForm.specimen().markAsTouched();
 
@@ -753,26 +790,29 @@ export class PlanningGeneralDataFormComponent {
   }
 
   onValidate(): void {
+    if (this.detectPlanningChanges()) return;
     this.#store.validatePlanning();
   }
 
   onUnlockPlanning(): void {
+    if (this.detectPlanningChanges()) return;
     this.#store.unlockPlanning();
   }
 
   cancel(): void {
+    if (this.detectPlanningChanges()) return;
     // Omit no saved form changes
     this.#store.reloadPlanningInfo();
-    this.formModel.set(this.#deepClone(this.#initialFormModel));
+    this.formModel.set(this.#deepClone(this.#initialFormModel()));
     this.#store.setSelectedSpecimens(structuredClone(this.#initialSelectedSpecimens));
-    const initialCriteria = this.#store.planningInfo()?.ratingCriteria;
+    const initialCriteria = this.#initialRatingCriteria();
     this.ratingCriteriaState.set(structuredClone(initialCriteria));
-    this.showRatingCriteria.set(this.#hasRatingCriteriaValues(initialCriteria));
-    const initialUnits = this.#store.planningInfo()?.ratingCriteriaUnits;
-    this.ratingCriteriaUnitsState.set(initialUnits);
+    this.showRatingCriteria.set(this.#initialShowRatingCriteria());
+    this.ratingCriteriaUnitsState.set(structuredClone(this.#initialRatingCriteriaUnits()));
   }
 
   saveDraft(): void {
+    if (this.detectPlanningChanges()) return;
     const mappedItem = mapFormDataToUpsertModel(
       this.generalDataForm().value(),
       this.#store.selectedSpecimens(),

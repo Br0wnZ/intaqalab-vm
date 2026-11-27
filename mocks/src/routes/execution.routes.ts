@@ -288,13 +288,13 @@ executionRouter.post('/:centerId/fire-trials/:fireTrialId/execution/start', (req
 });
 
 // Pausar ensayo
-executionRouter.post('/:centerId/fire-trials/:fireTrialId/execution/pause', (req, res) => {
-  setExecutionStatus(req.params['fireTrialId'], 'PAUSED');
+executionRouter.post('/:centerId/fire-trials/:fireTrialId/pause', (req, res) => {
+  setExecutionStatus(req.params['fireTrialId'], 'STARTED');
   res.status(204).send();
 });
 
 // Interrumpir ensayo
-executionRouter.post('/:centerId/fire-trials/:fireTrialId/execution/interrupt', (req, res) => {
+executionRouter.post('/:centerId/fire-trials/:fireTrialId/interrupt', (req, res) => {
   const { reason } = req.body as { reason?: string };
   if (!reason) {
     res.status(400).json({ title: 'Bad Request', status: 400, detail: "El campo 'reason' es obligatorio" });
@@ -305,13 +305,13 @@ executionRouter.post('/:centerId/fire-trials/:fireTrialId/execution/interrupt', 
 });
 
 // Reanudar ensayo
-executionRouter.post('/:centerId/fire-trials/:fireTrialId/execution/resume', (req, res) => {
+executionRouter.post('/:centerId/fire-trials/:fireTrialId/resume', (req, res) => {
   setExecutionStatus(req.params['fireTrialId'], 'ACTIVE');
   res.status(204).send();
 });
 
 // Cancelar ensayo
-executionRouter.post('/:centerId/fire-trials/:fireTrialId/execution/cancel', (req, res) => {
+executionRouter.post('/:centerId/fire-trials/:fireTrialId/cancel', (req, res) => {
   const { reason } = req.body as { reason?: string };
   if (!reason) {
     res.status(400).json({ title: 'Bad Request', status: 400, detail: "El campo 'reason' es obligatorio" });

@@ -2,7 +2,13 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Service, computed, inject, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Role, injectCurrentUser, injectCurrentUserRole } from '@intaqalab/core';
-import { PlanningTrialContextService } from '@intaqalab/data-access-planning';
+import {
+  PlanningArmamentService,
+  PlanningConditionsService,
+  PlanningMunitionsService,
+  PlanningSeriesService,
+  PlanningTrialContextService,
+} from '@intaqalab/data-access-planning';
 import type { TrialStatus } from '@intaqalab/models';
 import { PlanningPermissionsService } from '@intaqalab/planning';
 import { explicitEffect, injectPageVisibility } from '@intaqalab/utils';
@@ -11,7 +17,7 @@ import { ToastrService } from 'ngx-toastr';
 import { firstValueFrom } from 'rxjs';
 
 import { ExecutionStore } from '../../+state/execution.store';
-import { PlanningModificationsService } from '../../data-access';
+import { PlanningChangesService, PlanningModificationsService } from '../../data-access';
 import { EquipmentPlanningService } from '../../services/equipment-planning.service';
 import { CancelExecutionDialog } from '../dialogs/cancel-execution-dialog';
 import {
@@ -19,6 +25,7 @@ import {
   type ClientModificationsDialogData,
   type ClientModificationsDialogResult,
   PlanningModificationBlockedDialog,
+  type PlanningModificationBlockedDialogData,
   type PlanningModificationBlockedDialogResult,
 } from '../dialogs/client-modifications-dialog';
 import { EquipmentSelectorDialog } from '../dialogs/equipment-selector-dialog';
@@ -52,18 +59,25 @@ export class ExecutionPageFacade {
   readonly #store = inject(ExecutionStore);
   readonly #equipmentPlanning = inject(EquipmentPlanningService);
   readonly #planningPermissions = inject(PlanningPermissionsService);
+  readonly #planningChangesService = inject(PlanningChangesService);
   readonly #planningModificationsService = inject(PlanningModificationsService);
   readonly #planningTrialContext = inject(PlanningTrialContextService, { optional: true });
+  readonly #planningSeriesService = inject(PlanningSeriesService);
+  readonly #planningConditionsService = inject(PlanningConditionsService);
+  readonly #planningMunitionsService = inject(PlanningMunitionsService);
+  readonly #planningArmamentService = inject(PlanningArmamentService);
   readonly #widgetState = inject(WidgetStateService);
   readonly #translate = inject(TranslateService);
   readonly #toastr = inject(ToastrService);
   readonly #currentUser = injectCurrentUser();
   readonly #userRoles = injectCurrentUserRole();
+  readonly userRoles = this.#userRoles;
   readonly #pageVisible = injectPageVisibility();
   readonly #fireTrialId = signal<string | null>(null);
   readonly #isSaving = signal(false);
   readonly #hasModifications = signal(false);
   readonly #hasPendingModifications = signal(false);
+  readonly #modificationsStatusError = signal(false);
 
   /**
    * Se activa una vez que se reciben los primeros datos de ejecución.
@@ -139,6 +153,8 @@ export class ExecutionPageFacade {
     }
     return this.#planningPermissions.canModifyPlanningDuringExecution(status);
   });
+  readonly #executedShotIds = computed(() => this.#resolveExecutedShotIds());
+  readonly #executionProgressReady = computed(() => this.#store.executionProgress() !== undefined);
   readonly canViewModifications = computed(
     () => this.isClientReviewer() || (this.isTrialEngineer() && this.#hasModifications()),
   );
@@ -146,7 +162,7 @@ export class ExecutionPageFacade {
   readonly executionData = computed<ExecutionHeaderData>(() => {
     const trial = this.#store.fireTrialData();
     if (!trial) {
-      return { code: '—', client: '—', project: '—', status: '—' };
+      return { code: '—', client: '—', project: '—', status: '—', statusValue: undefined };
     }
 
     return {
@@ -154,6 +170,7 @@ export class ExecutionPageFacade {
       client: trial.client?.name ? `Cliente: ${trial.client.name}` : '—',
       project: trial.description ?? '—',
       status: this.#mapStatusLabel(trial.status),
+      statusValue: trial.status,
     };
   });
 
@@ -263,7 +280,8 @@ export class ExecutionPageFacade {
     this.#store.setFireTrialId(fireTrialId);
     this.#store.loadPreferencesByUser(fireTrialId, this.#currentUser.preferred_username);
     this.#equipmentPlanning.load(fireTrialId);
-    void this.#syncModificationsStatus(fireTrialId);
+    void this.#syncPlanningChangesStatus(fireTrialId);
+    void this.#syncLegacyModificationsStatus(fireTrialId);
   }
 
   toggleShowAllWidgets(): void {
@@ -297,6 +315,26 @@ export class ExecutionPageFacade {
       return;
     }
     await this.#runTransition(() => this.#store.resumeExecution(fireTrialId));
+  }
+
+  async reactivateExecution(): Promise<void> {
+    const fireTrialId = this.#fireTrialId();
+    if (!fireTrialId) {
+      return;
+    }
+    try {
+      await this.#store.reactivateExecution(fireTrialId);
+    } catch (error) {
+      if (error instanceof HttpErrorResponse && error.status === 403) {
+        this.#toastr.warning(this.#translate.instant('TRIAL_EXECUTION.ERRORS.REACTIVATE_FORBIDDEN'), undefined, {
+          timeOut: 5000,
+          progressBar: true,
+          closeButton: true,
+        });
+        return;
+      }
+      throw error;
+    }
   }
 
   async finishExecution(): Promise<void> {
@@ -376,21 +414,24 @@ export class ExecutionPageFacade {
       return;
     }
 
-    const hasPending = await this.#syncModificationsStatus(fireTrialId);
+    const hasPending = await this.#syncPlanningChangesStatus(fireTrialId);
+    if (this.#modificationsStatusError()) {
+      this.#toastr.error(this.#translate.instant('TRIAL_EXECUTION.PLANNING_MODIFICATION.MESSAGES.CHECK_ERROR'));
+      return;
+    }
     if (hasPending) {
-      const blockedResult = await firstValueFrom(
+      await firstValueFrom(
         this.#dialog
-          .open<PlanningModificationBlockedDialog, undefined, PlanningModificationBlockedDialogResult>(
+          .open<
             PlanningModificationBlockedDialog,
-            {
-              width: '520px',
-            },
-          )
+            PlanningModificationBlockedDialogData,
+            PlanningModificationBlockedDialogResult
+          >(PlanningModificationBlockedDialog, {
+            width: '520px',
+            data: { allowViewPending: false },
+          })
           .afterClosed(),
       );
-      if (blockedResult?.action === 'viewPending') {
-        await this.openClientModifications();
-      }
       return;
     }
 
@@ -405,9 +446,9 @@ export class ExecutionPageFacade {
           disableClose: true,
           data: {
             fireTrialId,
-            centerId: this.#resolveCenterId(),
             fireTrial: this.#store.fireTrial(),
-            executedShotIds: this.#resolveExecutedShotIds(),
+            executedShotIds: this.#executedShotIds,
+            executionProgressReady: this.#executionProgressReady,
           },
         })
         .afterClosed(),
@@ -419,16 +460,14 @@ export class ExecutionPageFacade {
 
     if (result.hasPendingChanges) {
       this.#hasPendingModifications.set(true);
-      this.#hasModifications.set(true);
     }
 
     if (result.hasAcceptedChanges) {
-      this.#hasModifications.set(true);
       this.#refreshTrialAndPlanningData(fireTrialId);
     }
 
     if (result.saved) {
-      void this.#syncModificationsStatus(fireTrialId);
+      void this.#syncPlanningChangesStatus(fireTrialId);
     }
   }
 
@@ -461,7 +500,7 @@ export class ExecutionPageFacade {
     }
 
     if (result.hasDecisions) {
-      void this.#syncModificationsStatus(fireTrialId);
+      void this.#syncLegacyModificationsStatus(fireTrialId);
     }
 
     if (result.hasAcceptedChanges) {
@@ -561,24 +600,41 @@ export class ExecutionPageFacade {
     );
   }
 
-  async #syncModificationsStatus(fireTrialId: string): Promise<boolean> {
+  async #syncPlanningChangesStatus(fireTrialId: string): Promise<boolean> {
+    try {
+      const changes = await this.#planningChangesService.fetch(fireTrialId);
+      const hasPending = changes.some((change) => change.status === 'PENDING');
+      this.#hasPendingModifications.set(hasPending);
+      this.#modificationsStatusError.set(false);
+      return hasPending;
+    } catch {
+      this.#modificationsStatusError.set(true);
+      return this.#hasPendingModifications();
+    }
+  }
+
+  async #syncLegacyModificationsStatus(fireTrialId: string): Promise<void> {
     try {
       const modifications = await this.#planningModificationsService.fetchModifications(
         fireTrialId,
         this.#resolveCenterId(),
       );
-      const hasPending = modifications.some((mod) => mod.status === 'PENDIENTE');
       this.#hasModifications.set(modifications.length > 0);
-      this.#hasPendingModifications.set(hasPending);
-      return hasPending;
     } catch {
-      return this.#hasPendingModifications();
+      this.#hasModifications.set(false);
     }
   }
 
   #refreshTrialAndPlanningData(fireTrialId: string): void {
     this.#store.setFireTrialId(fireTrialId);
     this.#equipmentPlanning.load(fireTrialId);
+    this.#planningSeriesService.reload();
+    this.#planningConditionsService.reload();
+    this.#planningMunitionsService.load(fireTrialId);
+    this.#planningMunitionsService.reload();
+    this.#planningArmamentService.load(fireTrialId);
+    this.#planningArmamentService.reload();
+    this.#equipmentPlanning.trialMeasuresResource.reload();
   }
 
   #restoreWidgetLayout(layout: WidgetPreferenceId[]): void {

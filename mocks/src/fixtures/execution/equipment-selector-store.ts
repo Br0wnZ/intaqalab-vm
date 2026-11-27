@@ -171,6 +171,25 @@ function defaultEquipmentSelectorState(): EquipmentSelectorGetResponse {
       ],
     },
     {
+      measurementGroup: EquipmentMagnitudeTagEnum.TRAYECTOGRAFIA,
+      selections: [
+        {
+          equipmentItemId: 1,
+          equipmentDenominationId: 4001,
+          categoryId: EquipmentTypeEnum.TRAJECTOGRAPHY_RADAR,
+          seriesIds: [...commonSeriesIds],
+          shotIds: [...commonShotIds],
+        },
+        {
+          equipmentItemId: 2,
+          equipmentDenominationId: 4002,
+          categoryId: EquipmentTypeEnum.TRAJECTOGRAPHY_RADAR,
+          seriesIds: ['funcionamiento-2', '3fa85f64-5717-4562-b3fc-2c963f66afa2'],
+          shotIds: ['disparo-3', '3fa85f64-5717-4562-b3fc-2c963f66bfa3'],
+        },
+      ],
+    },
+    {
       measurementGroup: EquipmentMagnitudeTagEnum.SONIDO,
       selections: [
         {
@@ -265,6 +284,64 @@ function defaultEquipmentSelectorState(): EquipmentSelectorGetResponse {
       ],
     },
     {
+      measurementGroup: EquipmentMagnitudeTagEnum.LONGITUD,
+      selections: [
+        {
+          equipmentItemId: 1,
+          equipmentDenominationId: 8001,
+          categoryId: EquipmentTypeEnum.TRACE_RULER,
+          magnitude: 'ATTACK',
+          seriesIds: [...commonSeriesIds],
+          shotIds: [...commonShotIds],
+        },
+      ],
+    },
+    {
+      measurementGroup: EquipmentMagnitudeTagEnum.PRESION_MANOMETROS,
+      selections: [
+        {
+          equipmentItemId: 1,
+          equipmentDenominationId: 9001,
+          categoryId: EquipmentTypeEnum.PRESSURE_GAUGE,
+          seriesIds: [...commonSeriesIds],
+          shotIds: [...commonShotIds],
+        },
+        {
+          equipmentItemId: 1,
+          equipmentDenominationId: 9101,
+          categoryId: EquipmentTypeEnum.CRUSHER,
+          seriesIds: [...commonSeriesIds],
+          shotIds: [...commonShotIds],
+        },
+        {
+          equipmentItemId: 1,
+          equipmentDenominationId: 9201,
+          categoryId: EquipmentTypeEnum.PROBE,
+          seriesIds: [...commonSeriesIds],
+          shotIds: [...commonShotIds],
+        },
+      ],
+    },
+    {
+      measurementGroup: EquipmentMagnitudeTagEnum.PRESION_IPG,
+      selections: [
+        {
+          equipmentItemId: 1,
+          equipmentDenominationId: 9301,
+          categoryId: EquipmentTypeEnum.IPG_SENSOR,
+          seriesIds: [...commonSeriesIds],
+          shotIds: [...commonShotIds],
+        },
+        {
+          equipmentItemId: 1,
+          equipmentDenominationId: 9401,
+          categoryId: EquipmentTypeEnum.MICROMODULE,
+          seriesIds: [...commonSeriesIds],
+          shotIds: [...commonShotIds],
+        },
+      ],
+    },
+    {
       measurementGroup: EquipmentMagnitudeTagEnum.ACONDICIONAMIENTO,
       selections: [
         {
@@ -311,6 +388,18 @@ function defaultEquipmentSelectorState(): EquipmentSelectorGetResponse {
           categoryId: EquipmentTypeEnum.BALANCE,
           seriesIds: ['funcionamiento-2', '3fa85f64-5717-4562-b3fc-2c963f66afa2'],
           shotIds: ['disparo-3', '3fa85f64-5717-4562-b3fc-2c963f66bfa3'],
+        },
+      ],
+    },
+    {
+      measurementGroup: EquipmentMagnitudeTagEnum.TIEMPO,
+      selections: [
+        {
+          equipmentItemId: 1,
+          equipmentDenominationId: 9701,
+          categoryId: EquipmentTypeEnum.CHRONOMETER,
+          seriesIds: [...commonSeriesIds],
+          shotIds: [...commonShotIds],
         },
       ],
     },

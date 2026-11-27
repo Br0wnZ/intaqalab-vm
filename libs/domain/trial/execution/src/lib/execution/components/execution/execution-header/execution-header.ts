@@ -1,9 +1,11 @@
 import { DatePipe, NgClass } from '@angular/common';
-import { Component, input, output } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { ALL_ROLES_EXCEPT_VIEWER, Role } from '@intaqalab/core';
+import { TrialStatus } from '@intaqalab/models';
 import { IntaIconComponent, ValueTooltip, getTrialStatusToneClass } from '@intaqalab/ui';
 import { TranslatePipe } from '@ngx-translate/core';
 
@@ -24,6 +26,7 @@ import { mapSelectedShotStatusClass, mapSelectedShotStatusLabel } from '../../..
     IntaIconComponent,
   ],
   template: `
+    @let actionItems = actionMenuItems();
     <div class="flex flex-col gap-4">
       <div class="flex gap-4 flex-wrap items-center justify-between">
         <div class="flex items-center gap-2 flex-wrap">
@@ -53,10 +56,24 @@ import { mapSelectedShotStatusClass, mapSelectedShotStatusLabel } from '../../..
           </span>
         </div>
 
-        <button mat-flat-button color="primary" [matMenuTriggerFor]="actionsMenu">
-          {{ 'TRIAL_EXECUTION.ACTIONS' | translate }}
-          <mat-icon iconPositionEnd>expand_more</mat-icon>
-        </button>
+        @if (actionItems.length === 1) {
+          @for (item of actionItems; track item.label) {
+            <button mat-flat-button color="primary" (click)="item.action()">
+              {{ item.label | translate }}
+            </button>
+          }
+        } @else {
+          <button
+            mat-flat-button
+            color="primary"
+            [hidden]="actionItems.length === 0"
+            [class.!hidden]="actionItems.length === 0"
+            [matMenuTriggerFor]="actionsMenu"
+          >
+            {{ 'TRIAL_EXECUTION.ACTIONS' | translate }}
+            <mat-icon iconPositionEnd>expand_more</mat-icon>
+          </button>
+        }
       </div>
 
       <div class="flex flex-wrap gap-4 items-center justify-between">
@@ -114,32 +131,9 @@ import { mapSelectedShotStatusClass, mapSelectedShotStatusLabel } from '../../..
     </div>
 
     <mat-menu class="!min-w-[200px]" #actionsMenu="matMenu">
-      <button mat-menu-item (click)="startRequested.emit()">
-        <span>{{ 'TRIAL_EXECUTION.ACTION_START' | translate }}</span>
-      </button>
-      <button mat-menu-item (click)="pauseRequested.emit()">
-        <span>{{ 'TRIAL_EXECUTION.ACTION_PAUSE' | translate }}</span>
-      </button>
-      <button mat-menu-item (click)="resumeRequested.emit()">
-        <span>{{ 'TRIAL_EXECUTION.ACTION_RESUME' | translate }}</span>
-      </button>
-      <button mat-menu-item (click)="interruptRequested.emit()">
-        <span>{{ 'TRIAL_EXECUTION.ACTION_STOP' | translate }}</span>
-      </button>
-      <button mat-menu-item (click)="cancelRequested.emit()">
-        <span>{{ 'TRIAL_EXECUTION.ACTION_CANCEL' | translate }}</span>
-      </button>
-      <button mat-menu-item (click)="finishRequested.emit()">
-        <span>{{ 'TRIAL_EXECUTION.ACTION_FINISH' | translate }}</span>
-      </button>
-      @if (canModifyPlanning()) {
-        <button mat-menu-item (click)="modifyPlanning.emit()">
-          <span>{{ 'TRIAL_EXECUTION.ACTION_MODIFY_PLANNING' | translate }}</span>
-        </button>
-      }
-      @if (canViewModifications()) {
-        <button mat-menu-item (click)="viewModifications.emit()">
-          <span>{{ 'TRIAL_EXECUTION.ACTION_VIEW_MODIFICATIONS' | translate }}</span>
+      @for (item of actionItems; track item.label) {
+        <button mat-menu-item (click)="item.action()">
+          <span>{{ item.label | translate }}</span>
         </button>
       }
     </mat-menu>
@@ -214,10 +208,79 @@ export class ExecutionHeader {
   readonly canSelectEquipment = input.required<boolean>();
   readonly canModifyPlanning = input<boolean>(false);
   readonly canViewModifications = input<boolean>(false);
+  readonly userRoles = input<readonly Role[]>([]);
+
+  readonly actionMenuItems = computed(() => {
+    return [
+      ...this.#getStateActions(this.executionData().statusValue).filter((item) => item.allowed),
+      ...(this.canModifyPlanning()
+        ? [{ label: 'TRIAL_EXECUTION.ACTION_MODIFY_PLANNING', action: () => this.modifyPlanning.emit() }]
+        : []),
+      ...(this.canViewModifications()
+        ? [{ label: 'TRIAL_EXECUTION.ACTION_VIEW_MODIFICATIONS', action: () => this.viewModifications.emit() }]
+        : []),
+    ];
+  });
+
+  #getStateActions(status: TrialStatus | undefined) {
+    const roles = this.userRoles();
+    const canControl = roles.some(
+      (role) => role === Role.INTAQALAB_ADMIN || role === Role.INTAQALAB_SHOOTING_LINE_HEAD,
+    );
+    const canCancel = canControl || roles.includes(Role.INTAQALAB_TRIAL_ENGINEER);
+    const canInterrupt = roles.some((role) => ALL_ROLES_EXCEPT_VIEWER.includes(role));
+    const canReactivate = canControl || roles.includes(Role.INTAQALAB_PLANNING_ANALYSIS_HEAD);
+    const canValidate = roles.some(
+      (role) =>
+        role === Role.INTAQALAB_ARMAMENT_UNIT_HEAD ||
+        role === Role.INTAQALAB_MUNITIONS_UNIT_HEAD ||
+        role === Role.INTAQALAB_BALLISTICS_UNIT_HEAD ||
+        role === Role.INTAQALAB_FIRE_TRIALS_UNIT_HEAD,
+    );
+
+    switch (status) {
+      case TrialStatus.PLANNED:
+        return [
+          { label: 'TRIAL_EXECUTION.ACTION_START', action: () => this.startRequested.emit(), allowed: canControl },
+        ];
+      case TrialStatus.IN_PROGRESS:
+        return [
+          { label: 'TRIAL_EXECUTION.ACTION_PAUSE', action: () => this.pauseRequested.emit(), allowed: canControl },
+          { label: 'TRIAL_EXECUTION.ACTION_STOP', action: () => this.interruptRequested.emit(), allowed: canInterrupt },
+          { label: 'TRIAL_EXECUTION.ACTION_CANCEL', action: () => this.cancelRequested.emit(), allowed: canCancel },
+          { label: 'TRIAL_EXECUTION.ACTION_FINISH', action: () => this.finishRequested.emit(), allowed: canControl },
+        ];
+      case TrialStatus.STARTED:
+        return [
+          { label: 'TRIAL_EXECUTION.ACTION_RESUME', action: () => this.resumeRequested.emit(), allowed: canControl },
+          { label: 'TRIAL_EXECUTION.ACTION_CANCEL', action: () => this.cancelRequested.emit(), allowed: canCancel },
+        ];
+      case TrialStatus.INTERRUPTED:
+        return [
+          { label: 'TRIAL_EXECUTION.ACTION_RESUME', action: () => this.resumeRequested.emit(), allowed: canControl },
+        ];
+      case TrialStatus.EXECUTED:
+        return [
+          { label: 'TRIAL_EXECUTION.ACTION_VALIDATE', action: () => undefined, allowed: canValidate },
+          { label: 'TRIAL_EXECUTION.ACTION_CANCEL', action: () => this.cancelRequested.emit(), allowed: canCancel },
+        ];
+      case TrialStatus.CANCELLED:
+        return [
+          {
+            label: 'TRIAL_EXECUTION.ACTION_REACTIVATE',
+            action: () => this.reactivateRequested.emit(),
+            allowed: canReactivate,
+          },
+        ];
+      default:
+        return [];
+    }
+  }
 
   readonly startRequested = output<void>();
   readonly pauseRequested = output<void>();
   readonly resumeRequested = output<void>();
+  readonly reactivateRequested = output<void>();
   readonly interruptRequested = output<void>();
   readonly cancelRequested = output<void>();
   readonly finishRequested = output<void>();

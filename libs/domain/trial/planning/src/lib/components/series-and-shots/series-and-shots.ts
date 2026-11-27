@@ -8,6 +8,7 @@ import {
   effect,
   inject,
   input,
+  output,
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -24,6 +25,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { SeriesAndShotsStore } from '../../+state/series-and-shots.store';
+import type { PlanningFormSnapshotEvent } from '../../models/planning-shell.model';
 import type { Serie, Shot } from '../../utils-models/series-and-shots.model';
 import { ConfirmDeleteSerieDialog } from '../confirm-delete-serie-dialog/confirm-delete-serie-dialog';
 import { ConfirmDeleteShotDialog } from '../confirm-delete-shot-dialog/confirm-delete-shot-dialog';
@@ -164,14 +166,14 @@ import { UpsertSerieDialog } from './new-serie-dialog/upsert-serie-dialog';
           <mat-accordion
             cdkDropList
             class="min-w-[600px] w-full"
-            [cdkDropListDisabled]="readonly()"
+            [cdkDropListDisabled]="readonly() || hasExecutedShots()"
             (cdkDropListDropped)="dropSerie($event)"
           >
             @for (serie of shotsSets(); track serie.id) {
               <mat-expansion-panel
                 cdkDrag
                 class="custom-expansion-panel [&]:!rounded-none"
-                [cdkDragDisabled]="readonly()"
+                [cdkDragDisabled]="isSerieReadonly(serie)"
                 (opened)="openPanel(serie.id)"
                 (closed)="closePanel(serie.id)"
               >
@@ -188,7 +190,7 @@ import { UpsertSerieDialog } from './new-serie-dialog/upsert-serie-dialog';
                         cdkDragHandle
                         class="!w-8 !h-8 !flex !items-center !justify-center drag-handle-btn !-ml-2"
                         [attr.title]="'COMMONS.DRAG_TO_REORDER' | translate"
-                        [disabled]="readonly()"
+                        [disabled]="isSerieReadonly(serie)"
                         [class.!text-purple-400]="openSerieId() === serie.id"
                         [class.hover:!text-purple-600]="openSerieId() === serie.id"
                         [class.!text-gray-400]="openSerieId() !== serie.id"
@@ -223,7 +225,7 @@ import { UpsertSerieDialog } from './new-serie-dialog/upsert-serie-dialog';
                     </div>
 
                     <div class="flex items-center gap-4">
-                      @if (!readonly()) {
+                      @if (!isSerieReadonly(serie)) {
                         <button
                           class="cursor-pointer"
                           [attr.aria-label]="'COMMONS.EDIT' | translate"
@@ -261,7 +263,12 @@ import { UpsertSerieDialog } from './new-serie-dialog/upsert-serie-dialog';
                       <h2 class="text-sm font-semibold">
                         {{ 'TRIAL_PLANNING.SERIES_AND_SHOTS_SECTION.SERIES_SHOTS' | translate }}
                       </h2>
-                      <button mat-flat-button class="flex gap-4" [disabled]="readonly()" (click)="addShot(serie.id)">
+                      <button
+                        mat-flat-button
+                        class="flex gap-4"
+                        [disabled]="isSerieReadonly(serie)"
+                        (click)="addShot(serie.id)"
+                      >
                         <ui-inta-icon name="plus" size="xs" class="mr-1" />
                         {{ 'TRIAL_PLANNING.SERIES_AND_SHOTS_SECTION.ADD_SHOT_BUTTON' | translate }}
                       </button>
@@ -296,14 +303,15 @@ import { UpsertSerieDialog } from './new-serie-dialog/upsert-serie-dialog';
                                     | translate
                                 }}"
                                 matInput
-                                [disabled]="readonly() || editingShotId() !== shot.id"
-                                [(ngModel)]="shot.observation"
+                                [disabled]="isShotReadonly(shot.id) || editingShotId() !== shot.id"
+                                [ngModel]="shot.observation"
+                                (ngModelChange)="onShotObservationChange(serie.id, shot.id, $event)"
                               />
                             </mat-form-field>
                           </div>
 
                           <div class="flex items-center justify-end gap-4">
-                            @if (!readonly()) {
+                            @if (!isShotReadonly(shot.id)) {
                               @if (editingShotId() === shot.id) {
                                 <button
                                   class="cursor-pointer flex items-center"
@@ -377,6 +385,9 @@ import { UpsertSerieDialog } from './new-serie-dialog/upsert-serie-dialog';
 export class SeriesAndShots {
   /** Si true, el componente está en modo solo lectura (el usuario no puede editar) */
   readonly readonly = input<boolean>(false);
+  readonly detectPlanningChanges = input<boolean>(false);
+  readonly executedShotIds = input<ReadonlyArray<string>>([]);
+  readonly formSnapshotChanged = output<PlanningFormSnapshotEvent>();
 
   readonly #translate = inject(TranslateService);
   readonly dialog = inject(MatDialog);
@@ -395,14 +406,18 @@ export class SeriesAndShots {
   readonly singleShotDeleteTooltipId = signal<string | null>(null);
 
   readonly shotsSets = signal<Serie[] | null>(null);
+  readonly #initialShotsSets = signal<Serie[]>([]);
+  #hasCapturedEditBaseline = false;
 
   readonly trialCode = computed(() => this.store.fireTrialCode());
 
   constructor() {
     effect(() => {
       const seriesResponse = this.seriesStore.series();
-      if (seriesResponse) {
+      if (seriesResponse && (!this.detectPlanningChanges() || !this.#hasCapturedEditBaseline)) {
         this.shotsSets.set(seriesResponse);
+        this.#initialShotsSets.set(structuredClone(seriesResponse));
+        if (this.detectPlanningChanges()) this.#hasCapturedEditBaseline = true;
       }
     });
 
@@ -441,10 +456,20 @@ export class SeriesAndShots {
         this.seriesStore.reloadSeries();
       }
     });
+
+    effect(() => {
+      if (!this.detectPlanningChanges() || !this.#hasCapturedEditBaseline) return;
+      this.formSnapshotChanged.emit({
+        section: 'series-and-shots',
+        baseline: this.#initialShotsSets(),
+        current: this.shotsSets() ?? [],
+        valid: true,
+      });
+    });
   }
 
   dropSerie(event: CdkDragDrop<Serie[]>) {
-    if (this.readonly()) {
+    if (this.readonly() || this.hasExecutedShots()) {
       return;
     }
     const items = [...(this.shotsSets() ?? [])];
@@ -456,10 +481,12 @@ export class SeriesAndShots {
     const ids = reordered.map((item) => item.id);
     const fireTrialId = this.store.fireTrialId();
     if (fireTrialId) {
-      this.seriesStore.reorderSeries({
-        trialId: fireTrialId,
-        seriesIds: ids,
-      });
+      if (!this.detectPlanningChanges()) {
+        this.seriesStore.reorderSeries({
+          trialId: fireTrialId,
+          seriesIds: ids,
+        });
+      }
     }
     this.shotsSets.set(reordered);
   }
@@ -476,6 +503,18 @@ export class SeriesAndShots {
 
   isOnlyShotInSerie(serie: Serie): boolean {
     return serie.shots.length === 1;
+  }
+
+  protected isShotReadonly(shotId: string): boolean {
+    return this.readonly() || (this.detectPlanningChanges() && this.executedShotIds().includes(shotId));
+  }
+
+  protected isSerieReadonly(serie: Serie): boolean {
+    return this.readonly() || serie.shots.some((shot) => this.isShotReadonly(shot.id));
+  }
+
+  protected hasExecutedShots(): boolean {
+    return this.detectPlanningChanges() && this.executedShotIds().length > 0;
   }
 
   setSingleShotDeleteTooltip(shotId: string, show: boolean): void {
@@ -496,22 +535,22 @@ export class SeriesAndShots {
       data: {
         isEditing: false,
         trialId: this.store.fireTrialId() || '',
+        detectPlanningChanges: this.detectPlanningChanges(),
       },
     });
     const result = await firstValueFrom(dialogRef.afterClosed());
-    if (result) {
+    if (result && !this.detectPlanningChanges()) {
       this.seriesStore.reloadSeries();
+    } else if (result && typeof result === 'object') {
+      this.#addLocalSerie(result.name, result.numberOfShots ?? 0, result.observations ?? '');
     }
   }
 
   async updateSerie(serieId: string) {
-    if (this.readonly()) {
-      return;
-    }
     const serie = this.shotsSets()
       ?.filter((s) => s.id === serieId)
       .shift();
-    if (!serie) return;
+    if (!serie || this.isSerieReadonly(serie)) return;
     const dialogRef = this.dialog.open(UpsertSerieDialog, {
       width: '500px',
       viewContainerRef: this.#viewContainerRef,
@@ -521,29 +560,52 @@ export class SeriesAndShots {
         name: serie.name,
         numberOfShots: serie.shots.length,
         observations: serie.observations,
+        detectPlanningChanges: this.detectPlanningChanges(),
       },
     });
     const result = await firstValueFrom(dialogRef.afterClosed());
-    if (result) {
+    if (result && !this.detectPlanningChanges()) {
       this.seriesStore.reloadSeries();
+    } else if (result && typeof result === 'object') {
+      this.shotsSets.update((series) =>
+        (series ?? []).map((item) =>
+          item.id === serie.id ? { ...item, name: result.name, observations: result.observations } : item,
+        ),
+      );
     }
   }
 
   addShot(serieId: string) {
-    if (this.readonly()) {
+    const serie = this.shotsSets()?.find((item) => item.id === serieId);
+    if (!serie || this.isSerieReadonly(serie)) return;
+    if (this.detectPlanningChanges()) {
+      this.shotsSets.update((series) =>
+        (series ?? []).map((serie) => {
+          if (serie.id !== serieId) return serie;
+          const nextGlobalNumber = Math.max(0, ...serie.shots.map((shot) => shot.globalNumber)) + 1;
+          return {
+            ...serie,
+            shots: [
+              ...serie.shots,
+              { id: `local-shot:${crypto.randomUUID()}`, globalNumber: nextGlobalNumber, observation: '' },
+            ],
+          };
+        }),
+      );
       return;
     }
     this.seriesStore.addShotToSerie({ serieId });
   }
 
   async deleteShot(serieId: string, shotId: string) {
-    if (this.readonly()) {
+    if (this.isShotReadonly(shotId)) {
       return;
     }
     const dialogRef = this.dialog.open(ConfirmDeleteShotDialog, {
       viewContainerRef: this.#viewContainerRef,
       data: {
         serieId,
+        detectPlanningChanges: this.detectPlanningChanges(),
         shotId,
         title: this.#translate.instant('TRIAL_PLANNING.DELETE_SHOT_DIALOG.TITLE'),
         message: this.#translate.instant('TRIAL_PLANNING.DELETE_SHOT_DIALOG.MESSAGE'),
@@ -568,13 +630,13 @@ export class SeriesAndShots {
   }
 
   async deleteSerie(serieId: string) {
-    if (this.readonly()) {
-      return;
-    }
+    const serie = this.shotsSets()?.find((item) => item.id === serieId);
+    if (!serie || this.isSerieReadonly(serie)) return;
     const dialogRef = this.dialog.open(ConfirmDeleteSerieDialog, {
       viewContainerRef: this.#viewContainerRef,
       data: {
         serieId,
+        detectPlanningChanges: this.detectPlanningChanges(),
         title: this.#translate.instant('TRIAL_PLANNING.DELETE_SERIE_DIALOG.TITLE'),
         message: this.#translate.instant('TRIAL_PLANNING.DELETE_SERIE_DIALOG.MESSAGE'),
         description: this.#translate.instant('TRIAL_PLANNING.DELETE_SERIE_DIALOG.DESCRIPTION'),
@@ -594,25 +656,59 @@ export class SeriesAndShots {
   }
 
   toggleEdit(shot: Shot) {
-    if (this.readonly()) {
+    if (this.isShotReadonly(shot.id)) {
       return;
     }
     if (this.editingShotId() === shot.id) {
       this.editingShotId.set(null);
-      this.seriesStore.reloadSeries();
+      if (!this.detectPlanningChanges()) this.seriesStore.reloadSeries();
     } else {
       this.editingShotId.set(shot.id);
     }
   }
 
   saveShot(shot: Shot) {
-    if (this.readonly()) {
+    if (this.isShotReadonly(shot.id)) {
       return;
     }
-    this.seriesStore.updateShot({
-      shotId: shot.id,
-      observation: shot.observation || '',
-    });
+    if (!this.detectPlanningChanges())
+      this.seriesStore.updateShot({
+        shotId: shot.id,
+        observation: shot.observation || '',
+      });
     this.editingShotId.set(null);
+  }
+
+  onShotObservationChange(serieId: string, shotId: string, observation: string): void {
+    if (this.isShotReadonly(shotId)) return;
+    this.shotsSets.update((series) =>
+      (series ?? []).map((serie) =>
+        serie.id === serieId
+          ? {
+              ...serie,
+              shots: serie.shots.map((shot) => (shot.id === shotId ? { ...shot, observation } : shot)),
+            }
+          : serie,
+      ),
+    );
+  }
+
+  #addLocalSerie(name: string, shotQuantity: number, observations: string): void {
+    const id = `local-serie:${crypto.randomUUID()}`;
+    const currentSeries = this.shotsSets() ?? [];
+    const count = Math.max(0, shotQuantity);
+    const localSeries: Serie = {
+      id,
+      name,
+      shotQuantity: count,
+      executionOrder: currentSeries.length + 1,
+      observations,
+      shots: Array.from({ length: count }, (_, index) => ({
+        id: `local-shot:${crypto.randomUUID()}`,
+        globalNumber: index + 1,
+        observation: '',
+      })),
+    };
+    this.shotsSets.set([...currentSeries, localSeries]);
   }
 }

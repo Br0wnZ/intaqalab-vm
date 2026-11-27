@@ -1,4 +1,4 @@
-import { Component, Injector, ViewEncapsulation, computed, effect, inject, input, signal } from '@angular/core';
+import { Component, Injector, ViewEncapsulation, computed, effect, inject, input, output, signal } from '@angular/core';
 import { applyEach, form, required, validate } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -11,6 +11,7 @@ import { firstValueFrom } from 'rxjs';
 import { MunitionsStore } from '../../+state/munitions.store';
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { SeriesAndShotsStore } from '../../+state/series-and-shots.store';
+import type { PlanningFormSnapshotEvent } from '../../models/planning-shell.model';
 import type { ComponentDetail, ReconditioningData, Serie } from '../../utils-models/munitions.model';
 import {
   MAX_RECONDITIONING_VALUE,
@@ -94,7 +95,7 @@ import { SeriePanelComponent } from './serie-panel/serie-panel.component';
                 </ui-badge>
               }
             </div>
-            @if (!readonly()) {
+            @if (!readonly() && !detectPlanningChanges()) {
               <button
                 mat-flat-button
                 [disabled]="checkIfAnyConfigurationsHaveValues()"
@@ -114,6 +115,7 @@ import { SeriePanelComponent } from './serie-panel/serie-panel.component';
                 [shots]="shotsPerSerie().get(serie.seriesId) ?? []"
                 [expanded]="serieIdx === 0"
                 [readonly]="readonly()"
+                [executedShotIds]="executedShotIds()"
                 (deleteConfiguration)="deleteConfiguration(serieIdx, $event)"
               />
             }
@@ -126,7 +128,7 @@ import { SeriePanelComponent } from './serie-panel/serie-panel.component';
           }
 
           <div class="mt-6 flex gap-4 justify-end">
-            @if (!readonly()) {
+            @if (!readonly() && !detectPlanningChanges()) {
               <button mat-flat-button [disabled]="hasToBeDisabled()" (click)="saveForm()">
                 {{ 'TRIAL_PLANNING.MUNITIONS.HEADER.SAVE_BUTTON' | translate }}
               </button>
@@ -161,6 +163,9 @@ import { SeriePanelComponent } from './serie-panel/serie-panel.component';
 export class Munitions {
   /** Si true, el componente está en modo solo lectura (el usuario no puede editar) */
   readonly readonly = input<boolean>(false);
+  readonly detectPlanningChanges = input<boolean>(false);
+  readonly executedShotIds = input<ReadonlyArray<string>>([]);
+  readonly formSnapshotChanged = output<PlanningFormSnapshotEvent>();
 
   readonly #munitionsStore = inject(MunitionsStore);
   readonly #planningGeneralDataStore = inject(PlanningGeneralDataStore);
@@ -229,6 +234,8 @@ export class Munitions {
   readonly trialStatus = computed(() => this.#planningGeneralDataStore.fireTrial()?.status);
 
   readonly #initialSeriesData = signal<Serie[]>([]);
+  readonly #initialRawConfigurations = signal<ReadonlyArray<unknown>>([]);
+  readonly #persistedConfigurationIds = signal<ReadonlySet<string>>(new Set());
   #isLocalInitialized = false;
   #preDeleteSnapshot: Serie[] | null = null;
   #massiveDialogOpen = false;
@@ -259,6 +266,8 @@ export class Munitions {
 
       if (!allSeries || munitionsStatus === 'loading' || munitionsStatus === 'reloading') return;
 
+      if (this.detectPlanningChanges() && this.#isLocalInitialized) return;
+
       const mappedMunitions = mapBackendToLocal(seriesMunitions ?? [], componentTypes, denominations, fuseWorkingModes);
       const munitionsById = new Map(mappedMunitions.map((s) => [s.seriesId, s]));
 
@@ -275,6 +284,14 @@ export class Munitions {
 
       if (!this.#isLocalInitialized && (munitionsStatus === 'resolved' || munitionsStatus === 'error')) {
         this.#initialSeriesData.set(this.#deepClone(completeSeries));
+        this.#initialRawConfigurations.set(
+          structuredClone((seriesMunitions ?? []).flatMap((series) => series.configurations)),
+        );
+        this.#persistedConfigurationIds.set(
+          new Set(
+            (seriesMunitions ?? []).flatMap((series) => series.configurations.map((configuration) => configuration.id)),
+          ),
+        );
         this.#isLocalInitialized = true;
       }
     });
@@ -295,6 +312,28 @@ export class Munitions {
         }
         this.#munitionsStore.resetUpdateMunitions();
       }
+    });
+
+    effect(() => {
+      if (!this.detectPlanningChanges() || !this.#isLocalInitialized) return;
+      const persistedConfigurationIds = [...this.#persistedConfigurationIds()];
+      this.formSnapshotChanged.emit({
+        section: 'munitions',
+        baseline: {
+          series: this.#initialSeriesData(),
+          persistedConfigurationIds,
+          rawConfigurations: this.#initialRawConfigurations(),
+        },
+        current: { series: this.seriesSignal(), persistedConfigurationIds },
+        valueReferences: {
+          denominationId: this.#munitionsStore.denominations(),
+          typeId: this.#munitionsStore.componentTypes(),
+          selectedComponents: this.#munitionsStore.componentTypes(),
+          munitionTypeId: this.#munitionsStore.munitionTypes(),
+          fuseWorkingModeId: this.#munitionsStore.fuseWorkingModes(),
+        },
+        valid: this.isFormValid(),
+      });
     });
   }
 
@@ -444,7 +483,7 @@ export class Munitions {
   }
 
   async openMassiveConfigDialog(): Promise<void> {
-    if (this.readonly()) {
+    if (this.readonly() || this.detectPlanningChanges()) {
       return;
     }
     this.#massiveDialogOpen = true;
@@ -473,7 +512,7 @@ export class Munitions {
   }
 
   saveForm(): void {
-    if (this.readonly()) {
+    if (this.readonly() || this.detectPlanningChanges()) {
       return;
     }
     if (!this.isFormValid()) {
@@ -503,6 +542,8 @@ export class Munitions {
         return { ...s, configurations: s.configurations.filter((_, cIdx) => cIdx !== configIdx) };
       }),
     );
+
+    if (this.detectPlanningChanges()) return;
 
     if (!this.isFormValid()) {
       console.warn('Form inválido tras eliminar configuración, PUT cancelado');
@@ -551,6 +592,7 @@ export class Munitions {
   }
 
   #saveValidSeries(): void {
+    if (this.detectPlanningChanges()) return;
     this.#munitionsStore.updateMunitions({ configurations: mapLocalToRequest(this.#validSeries()) });
   }
 

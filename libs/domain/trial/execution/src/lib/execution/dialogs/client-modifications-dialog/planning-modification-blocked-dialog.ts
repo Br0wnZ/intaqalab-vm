@@ -1,10 +1,13 @@
 import { Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { TranslatePipe } from '@ngx-translate/core';
 
-import type { PlanningModificationBlockedDialogResult } from './client-modifications-dialog.models';
+import type {
+  PlanningModificationBlockedDialogData,
+  PlanningModificationBlockedDialogResult,
+} from './client-modifications-dialog.models';
 
 @Component({
   selector: 'inta-planning-modification-blocked-dialog',
@@ -25,13 +28,16 @@ import type { PlanningModificationBlockedDialogResult } from './client-modificat
       <button mat-stroked-button type="button" (click)="close()">
         {{ 'TRIAL_EXECUTION.PLANNING_MODIFICATION.BLOCKED_MODAL.CLOSE_BTN' | translate }}
       </button>
-      <button mat-flat-button color="primary" type="button" (click)="viewPending()">
-        {{ 'TRIAL_EXECUTION.PLANNING_MODIFICATION.BLOCKED_MODAL.VIEW_PENDING_BTN' | translate }}
-      </button>
+      @if (data?.allowViewPending !== false) {
+        <button mat-flat-button color="primary" type="button" (click)="viewPending()">
+          {{ 'TRIAL_EXECUTION.PLANNING_MODIFICATION.BLOCKED_MODAL.VIEW_PENDING_BTN' | translate }}
+        </button>
+      }
     </mat-dialog-actions>
   `,
 })
 export class PlanningModificationBlockedDialog {
+  readonly data = inject<PlanningModificationBlockedDialogData>(MAT_DIALOG_DATA, { optional: true });
   readonly #dialogRef =
     inject<MatDialogRef<PlanningModificationBlockedDialog, PlanningModificationBlockedDialogResult>>(MatDialogRef);
 

@@ -1,11 +1,14 @@
 import { Component, input, output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import type { PlanningSeriesShotItem } from '@intaqalab/data-access-planning';
+import type { PlanningValueReferences } from '@intaqalab/planning';
 import { SaveButton } from '@intaqalab/ui';
 import { TranslatePipe } from '@ngx-translate/core';
 
 import type { PlanningChange, PlanningModification } from '../../../../data-access/planning-modifications';
 import type { ModificationClassificationChangeEvent } from '../modify-planning-dialog.models';
+import type { PlanningChangeInclusionChangeEvent } from '../modify-planning-dialog.models';
 import { ModificationsTable, type PlanningModificationRow } from './modifications-table';
 
 @Component({
@@ -46,7 +49,7 @@ import { ModificationsTable, type PlanningModificationRow } from './modification
             </span>
             <ul class="list-disc pl-5 m-0 text-sm space-y-0.5">
               @for (error of validationErrors(); track error) {
-                <li>{{ error }}</li>
+                <li>{{ error | translate }}</li>
               }
             </ul>
           </div>
@@ -66,8 +69,11 @@ import { ModificationsTable, type PlanningModificationRow } from './modification
       <div class="flex-1 min-h-0 overflow-y-auto">
         <inta-modifications-table
           [modifications]="modifications()"
-          [disabled]="hasPendingModifications() || isSaving()"
+          [shots]="shots()"
+          [valueReferences]="valueReferences()"
+          [disabled]="hasPendingModifications() || isSaving() || canRetry()"
           (classificationChange)="classificationChange.emit($event)"
+          (includeChange)="includeChange.emit($event)"
         />
       </div>
 
@@ -75,7 +81,7 @@ import { ModificationsTable, type PlanningModificationRow } from './modification
         <ui-save-button
           label="TRIAL_EXECUTION.PLANNING_MODIFICATION.DIALOG.SAVE_BTN"
           [isSaving]="isSaving()"
-          [isDisabled]="!canSave() || hasPendingModifications()"
+          [isDisabled]="(!canSave() && !canRetry()) || hasPendingModifications()"
           (save)="saveChanges.emit()"
         />
       </div>
@@ -83,14 +89,18 @@ import { ModificationsTable, type PlanningModificationRow } from './modification
   `,
 })
 export class PlanningModificationsTab {
+  readonly shots = input<ReadonlyArray<PlanningSeriesShotItem>>([]);
+  readonly valueReferences = input<PlanningValueReferences>({});
   readonly modifications = input<ReadonlyArray<PlanningModificationRow>>([]);
   readonly validationErrors = input<ReadonlyArray<string>>([]);
   readonly hasPendingModifications = input<boolean>(false);
   readonly isSaving = input<boolean>(false);
   readonly isLoading = input<boolean>(false);
   readonly canSave = input<boolean>(false);
+  readonly canRetry = input<boolean>(false);
   readonly errorMessage = input<string | null>(null);
 
   readonly classificationChange = output<ModificationClassificationChangeEvent>();
+  readonly includeChange = output<PlanningChangeInclusionChangeEvent>();
   readonly saveChanges = output<void>();
 }

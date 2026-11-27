@@ -2,9 +2,9 @@ import { Component, ViewEncapsulation, effect, inject, signal } from '@angular/c
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import type { ConfirmDialogData } from '@intaqalab/models';
 import { MatButtonModule, MatIconModule } from '@intaqalab/theme';
+import { IntaIconComponent } from '@intaqalab/ui';
 
 import { SeriesAndShotsStore } from '../../+state/series-and-shots.store';
-import { IntaIconComponent } from "@intaqalab/ui";
 
 @Component({
   selector: 'inta-confirm-delete-shot-dialog',
@@ -23,10 +23,19 @@ import { IntaIconComponent } from "@intaqalab/ui";
     </mat-dialog-content>
 
     <mat-dialog-actions>
-      <button mat-flat-button cdkFocusInitial [disabled]="store.isDeletingShot()" (click)="onConfirm()">
+      <button
+        mat-flat-button
+        cdkFocusInitial
+        [disabled]="!data.detectPlanningChanges && store.isDeletingShot()"
+        (click)="onConfirm()"
+      >
         {{ data.confirmText || 'Confirmar' }}
       </button>
-      <button mat-stroked-button [disabled]="store.isDeletingShot()" (click)="onCancel()">
+      <button
+        mat-stroked-button
+        [disabled]="!data.detectPlanningChanges && store.isDeletingShot()"
+        (click)="onCancel()"
+      >
         {{ data.cancelText || 'Cancelar' }}
       </button>
     </mat-dialog-actions>
@@ -36,7 +45,7 @@ import { IntaIconComponent } from "@intaqalab/ui";
 })
 export class ConfirmDeleteShotDialog {
   readonly dialogRef = inject(MatDialogRef<ConfirmDeleteShotDialog>);
-  readonly data = inject<ConfirmDialogData & { shotId: string }>(MAT_DIALOG_DATA);
+  readonly data = inject<ConfirmDialogData & { shotId: string; detectPlanningChanges?: boolean }>(MAT_DIALOG_DATA);
   protected readonly store = inject(SeriesAndShotsStore);
   readonly #deleteConfirmed = signal(false);
 
@@ -50,6 +59,10 @@ export class ConfirmDeleteShotDialog {
   }
 
   onConfirm(): void {
+    if (this.data.detectPlanningChanges) {
+      this.dialogRef.close(true);
+      return;
+    }
     this.#deleteConfirmed.set(true);
     this.store.deleteShot(this.data.shotId);
   }

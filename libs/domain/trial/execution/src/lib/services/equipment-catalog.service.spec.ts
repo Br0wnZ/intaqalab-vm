@@ -35,9 +35,11 @@ describe('EquipmentCatalogService', () => {
     const req = http.expectOne(
       (request) =>
         request.url.endsWith('/equipment/items') &&
-        request.params.get('categoryId') === EquipmentTypeEnum.DOPPLER_RADAR,
+        request.params.get('categoryId') === EquipmentTypeEnum.DOPPLER_RADAR &&
+        request.params.get('status') === 'IN_USE',
     );
     expect(req.request.method).toBe('GET');
+    expect(req.request.params.getAll('itemType')).toEqual(['STANDARD']);
     req.flush({
       totalElements: 2,
       items: [
@@ -53,6 +55,8 @@ describe('EquipmentCatalogService', () => {
   it('returns cached results on subsequent requests for the same category without firing new HTTP calls', async () => {
     const firstPromise = service.loadCategoryItems(EquipmentTypeEnum.ANTENNA);
     const req = http.expectOne((r) => r.params.get('categoryId') === EquipmentTypeEnum.ANTENNA);
+    expect(req.request.params.get('status')).toBe('IN_USE');
+    expect(req.request.params.getAll('itemType')).toBeNull();
     req.flush({ totalElements: 1, items: [{ id: 201, denominationName: 'Antenna Horn', tag: 'ANT-01' }] });
     await firstPromise;
 
@@ -68,6 +72,8 @@ describe('EquipmentCatalogService', () => {
     const promise2 = service.loadCategoryItems(EquipmentTypeEnum.AMPLIFIER);
 
     const req = http.expectOne((r) => r.params.get('categoryId') === EquipmentTypeEnum.AMPLIFIER);
+    expect(req.request.params.get('status')).toBe('IN_USE');
+    expect(req.request.params.getAll('itemType')).toBeNull();
     req.flush({ totalElements: 1, items: [{ id: 301, denominationName: 'Amp 301', tag: 'AMP-01' }] });
 
     const [res1, res2] = await Promise.all([promise1, promise2]);
@@ -83,6 +89,10 @@ describe('EquipmentCatalogService', () => {
 
     const reqRadar = http.expectOne((r) => r.params.get('categoryId') === EquipmentTypeEnum.DOPPLER_RADAR);
     const reqAntenna = http.expectOne((r) => r.params.get('categoryId') === EquipmentTypeEnum.ANTENNA);
+    expect(reqRadar.request.params.get('status')).toBe('IN_USE');
+    expect(reqRadar.request.params.getAll('itemType')).toEqual(['STANDARD']);
+    expect(reqAntenna.request.params.get('status')).toBe('IN_USE');
+    expect(reqAntenna.request.params.getAll('itemType')).toBeNull();
 
     reqRadar.flush({ totalElements: 1, items: [{ id: 11, denominationName: 'Radar', tag: 'R-01' }] });
     reqAntenna.flush({ totalElements: 1, items: [{ id: 22, denominationName: 'Antenna', tag: 'A-01' }] });
@@ -90,6 +100,17 @@ describe('EquipmentCatalogService', () => {
     const result = await promise;
     expect(result[EquipmentTypeEnum.DOPPLER_RADAR]).toEqual([{ id: '11', label: 'Radar / R-01' }]);
     expect(result[EquipmentTypeEnum.ANTENNA]).toEqual([{ id: '22', label: 'Antenna / A-01' }]);
+  });
+
+  it('requests STANDARD items for balance equipment', async () => {
+    const promise = service.loadCategoryItems(EquipmentTypeEnum.BALANCE);
+    const req = http.expectOne((r) => r.params.get('categoryId') === EquipmentTypeEnum.BALANCE);
+
+    expect(req.request.params.get('status')).toBe('IN_USE');
+    expect(req.request.params.getAll('itemType')).toEqual(['STANDARD']);
+    req.flush({ totalElements: 0, items: [] });
+
+    await expect(promise).resolves.toEqual([]);
   });
 
   it('handles empty category array without HTTP requests', async () => {

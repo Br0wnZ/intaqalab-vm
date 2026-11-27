@@ -1,12 +1,13 @@
 {
   "series": [
     {
-      "seriesId": "550e8400-e29b-41d4-a716-446655440001",
+      "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa1",
       "seriesName": "Serie 1",
       "shots": [
         {
-          "shotId": "750e8400-e29b-41d4-a716-446655440001",
+          "shotId": "3fa85f64-5717-4562-b3fc-2c963f66bfa1",
           "armament": {
+            "id": "850e8400-e29b-41d4-a716-446655440001",
             "weaponType": "WEAPON",
             "weaponName": "Cañón 120mm L44",
             "weaponExternalId": 1,
@@ -18,8 +19,9 @@
           }
         },
         {
-          "shotId": "750e8400-e29b-41d4-a716-446655440002",
+          "shotId": "3fa85f64-5717-4562-b3fc-2c963f66bfa2",
           "armament": {
+            "id": "850e8400-e29b-41d4-a716-446655440002",
             "weaponType": "WEAPON",
             "weaponName": "Cañón 120mm L44",
             "weaponExternalId": 1,
@@ -33,12 +35,13 @@
       ]
     },
     {
-      "seriesId": "550e8400-e29b-41d4-a716-446655440002",
+      "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa2",
       "seriesName": "Serie 2",
       "shots": [
         {
-          "shotId": "750e8400-e29b-41d4-a716-446655440003",
+          "shotId": "3fa85f64-5717-4562-b3fc-2c963f66bfa3",
           "armament": {
+            "id": "850e8400-e29b-41d4-a716-446655440003",
             "weaponType": "WEAPON",
             "weaponName": "Obús M107",
             "weaponExternalId": 3,
@@ -50,8 +53,9 @@
           }
         },
         {
-          "shotId": "750e8400-e29b-41d4-a716-446655440004",
+          "shotId": "3fa85f64-5717-4562-b3fc-2c963f66bfa4",
           "armament": {
+            "id": "850e8400-e29b-41d4-a716-446655440004",
             "weaponType": "WEAPON",
             "weaponName": "Obús M107",
             "weaponExternalId": 3,
@@ -65,12 +69,13 @@
       ]
     },
     {
-      "seriesId": "550e8400-e29b-41d4-a716-446655440003",
+      "seriesId": "3fa85f64-5717-4562-b3fc-2c963f66afa3",
       "seriesName": "Serie 3",
       "shots": [
         {
-          "shotId": "750e8400-e29b-41d4-a716-446655440005",
+          "shotId": "3fa85f64-5717-4562-b3fc-2c963f66bfa5",
           "armament": {
+            "id": "850e8400-e29b-41d4-a716-446655440005",
             "weaponType": "MORTAR",
             "weaponName": "Mortero M120",
             "weaponExternalId": 4,

@@ -1,5 +1,5 @@
 import type { OnInit } from '@angular/core';
-import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FormField, apply, applyEach, disabled, form, max, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
@@ -34,6 +34,7 @@ import {
 import { TranslatePipe } from '@ngx-translate/core';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
+import type { PlanningFormSnapshotEvent } from '../../models/planning-shell.model';
 import type { Serie, Shot } from '../../models/shooting-conditions.model';
 import { MAX_ANGULAR_VALUE, MAX_DISTANCE_VALUE, MAX_WEIGHT_VALUE } from '../../models/shooting-conditions.model';
 import { ShootingConditionsService } from '../../services/shooting-conditions.service';
@@ -70,7 +71,7 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
   ],
   template: `
     @if (isLoadingView()) {
-      <div class="w-full space-y-4">
+      <div class="w-full min-w-0 space-y-4">
         <!-- Header skeleton -->
         <div class="flex items-center justify-between mt-6 mb-8">
           <div class="flex gap-2">
@@ -110,7 +111,7 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
         [message]="'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ERRORS.LOAD_FAILED_DETAIL' | translate"
       />
     } @else {
-      <div class="w-full space-y-4">
+      <div class="w-full min-w-0 space-y-4">
         <div class="flex items-center justify-between mt-6 mb-8">
           <div class="flex gap-2">
             <h2 class="bg-purple-200/50 text-purple-700 p-2 rounded-lg">
@@ -122,7 +123,7 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
               </ui-badge>
             }
           </div>
-          @if (!readonly()) {
+          @if (!readonly() && !detectPlanningChanges()) {
             <button mat-flat-button (click)="openMassiveConfigurationDialog()">
               {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ACTIONS.MASSIVE_CONFIG_BUTTON' | translate }}
             </button>
@@ -140,15 +141,21 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
                 </mat-panel-title>
               </mat-expansion-panel-header>
 
-              <div class="py-4 bg-white -mx-6 -mb-6 rounded-t-lg">
+              <div class="py-4 bg-white -mb-6 rounded-t-lg" [class.-mx-6]="!detectPlanningChanges()">
                 <div class="flex items-center justify-between mb-4 px-4">
                   <h3 class="font-semibold text-sm text-gray-700">
                     {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TITLE' | translate }}
                   </h3>
                 </div>
 
-                <div class="overflow-x-auto border border-slate-200">
-                  <table mat-table class="w-full compact-table" [dataSource]="serie.shots" [trackBy]="trackByShotId">
+                <div class="min-w-0 overflow-x-auto border border-slate-200">
+                  <table
+                    mat-table
+                    class="w-full compact-table"
+                    [class.min-w-max]="detectPlanningChanges()"
+                    [dataSource]="serie.shots"
+                    [trackBy]="trackByShotId"
+                  >
                     <ng-container matColumnDef="globalNumber">
                       <th
                         *matHeaderCellDef
@@ -381,6 +388,7 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
                             label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.DISTANCE' | translate }}"
                             [opciones]="unitOptions.distance"
                             [showLabel]="false"
+                            [disabled]="isShotReadonly(shot.shotId)"
                             [value]="{ value: shot.distance?.toString() ?? '', unit: shot.distanceUnit }"
                             (valueChange)="onShotFieldChange(serieIdx, i, 'distance', $event)"
                           >
@@ -414,6 +422,7 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
                             label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.INCLINATION' | translate }}"
                             [opciones]="unitOptions.targetInclination"
                             [showLabel]="false"
+                            [disabled]="isShotReadonly(shot.shotId)"
                             [value]="{
                               value: shot.targetInclination?.toString() ?? '',
                               unit: shot.targetInclinationUnit,
@@ -449,6 +458,7 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
                           label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.ORIENTATION' | translate }}"
                           [opciones]="unitOptions.orientation"
                           [showLabel]="false"
+                          [disabled]="isShotReadonly(shot.shotId)"
                           [value]="{ value: shot.orientation?.toString() ?? '', unit: shot.orientationUnit }"
                           (valueChange)="onShotFieldChange(serieIdx, i, 'orientation', $event)"
                         >
@@ -480,6 +490,7 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
                           label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.ELEVATION' | translate }}"
                           [opciones]="unitOptions.elevation"
                           [showLabel]="false"
+                          [disabled]="isShotReadonly(shot.shotId)"
                           [value]="{ value: shot.elevation?.toString() ?? '', unit: shot.elevationUnit }"
                           (valueChange)="onShotFieldChange(serieIdx, i, 'elevation', $event)"
                         >
@@ -511,6 +522,7 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
                           label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.ANGLE' | translate }}"
                           [opciones]="unitOptions.angle"
                           [showLabel]="false"
+                          [disabled]="isShotReadonly(shot.shotId)"
                           [value]="{ value: shot.angle?.toString() ?? '', unit: shot.angleUnit }"
                           (valueChange)="onShotFieldChange(serieIdx, i, 'angle', $event)"
                         >
@@ -542,6 +554,7 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
                           label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.RANGE' | translate }}"
                           [opciones]="unitOptions.range"
                           [showLabel]="false"
+                          [disabled]="isShotReadonly(shot.shotId)"
                           [value]="{ value: shot.range?.toString() ?? '', unit: shot.rangeUnit }"
                           (valueChange)="onShotFieldChange(serieIdx, i, 'range', $event)"
                         >
@@ -575,6 +588,7 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
                           }}"
                           [opciones]="unitOptions.functioningHeight"
                           [showLabel]="false"
+                          [disabled]="isShotReadonly(shot.shotId)"
                           [value]="{
                             value: shot.functioningHeight?.toString() ?? '',
                             unit: shot.functioningHeightUnit,
@@ -609,6 +623,7 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
                           label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.POWDER_WEIGHT' | translate }}"
                           [opciones]="unitOptions.powderWeight"
                           [showLabel]="false"
+                          [disabled]="isShotReadonly(shot.shotId)"
                           [value]="{ value: shot.powderWeight?.toString() ?? '', unit: shot.powderWeightUnit }"
                           (valueChange)="onShotFieldChange(serieIdx, i, 'powderWeight', $event)"
                         >
@@ -640,6 +655,7 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
                           label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.PROJECTILE_WEIGHT' | translate }}"
                           [opciones]="unitOptions.projectileWeight"
                           [showLabel]="false"
+                          [disabled]="isShotReadonly(shot.shotId)"
                           [value]="{ value: shot.projectileWeight?.toString() ?? '', unit: shot.projectileWeightUnit }"
                           (valueChange)="onShotFieldChange(serieIdx, i, 'projectileWeight', $event)"
                         >
@@ -671,6 +687,7 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
                           label="{{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.NOMINAL_SPEED' | translate }}"
                           [opciones]="unitOptions.nominalSpeed"
                           [showLabel]="false"
+                          [disabled]="isShotReadonly(shot.shotId)"
                           [value]="{ value: shot.nominalSpeed?.toString() ?? '', unit: shot.nominalSpeedUnit }"
                           (valueChange)="onShotFieldChange(serieIdx, i, 'nominalSpeed', $event)"
                         >
@@ -717,7 +734,7 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
           }
         </mat-accordion>
         <div class="mt-10 flex gap-4 justify-end">
-          @if (!readonly()) {
+          @if (!readonly() && !detectPlanningChanges()) {
             <button mat-flat-button [disabled]="hasToBeDisabled()" (click)="saveForm()">
               {{ 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.ACTIONS.SAVE' | translate }}
             </button>
@@ -734,6 +751,9 @@ import { buildSeriesFromStore, mapDataToRequest } from './shooting-conditions.ma
 export class ShootingConditionsComponent implements OnInit {
   /** Si true, el componente está en modo solo lectura (el usuario no puede editar) */
   readonly readonly = input<boolean>(false);
+  readonly detectPlanningChanges = input<boolean>(false);
+  readonly executedShotIds = input<ReadonlyArray<string>>([]);
+  readonly formSnapshotChanged = output<PlanningFormSnapshotEvent>();
 
   readonly #dialog = inject(MatDialog);
   readonly #store = inject(PlanningGeneralDataStore);
@@ -804,21 +824,40 @@ export class ShootingConditionsComponent implements OnInit {
   readonly hasToBeDisabled = computed(() => {
     const isUpdating = this.isUpdating();
     const isFormInvalid = this.seriesForm().invalid();
-    const hasUnchangedData = JSON.stringify(this.seriesSignal()) === JSON.stringify(this.#initialSeriesData);
+    const hasUnchangedData = JSON.stringify(this.seriesSignal()) === JSON.stringify(this.#initialSeriesData());
 
     return isUpdating || isFormInvalid || hasUnchangedData;
   });
 
-  #initialSeriesData: Serie[] = [];
+  readonly #initialSeriesData = signal<Serie[]>([]);
+  readonly #initialRawConditions = signal<unknown>([]);
+  readonly #initialRawUnits = signal<unknown>({});
+  readonly #hasCapturedEditBaseline = signal(false);
   #conditionsApplied = false;
 
   readonly seriesSignal = signal<Serie[]>([]);
+
+  readonly #conditionSnapshot = computed(() => ({
+    series: this.seriesSignal(),
+    units: this.#conditionSnapshotUnits(this.seriesSignal()),
+  }));
 
   constructor() {
     effect(() => {
       const series = this.store.series();
       const conditions = this.store.shootingConditions();
-      if (!series?.length) return;
+      if (this.detectPlanningChanges()) {
+        if (!series || this.shootingConditionsSource.status() !== 'resolved') return;
+      } else if (!series?.length) {
+        return;
+      }
+
+      if (
+        this.detectPlanningChanges() &&
+        (this.#hasCapturedEditBaseline() || this.shootingConditionsSource.status() !== 'resolved')
+      ) {
+        return;
+      }
 
       const hasConditions = !!conditions?.length;
 
@@ -828,9 +867,36 @@ export class ShootingConditionsComponent implements OnInit {
       const conditionsUnits = this.store.conditionsUnits();
       const merged = buildSeriesFromStore(series, conditionsUnits, conditions);
       this.seriesSignal.set(merged);
-      this.#initialSeriesData = this.#deepClone(merged);
+      this.#initialSeriesData.set(this.#deepClone(merged));
+      this.#initialRawConditions.set(structuredClone(conditions ?? []));
+      this.#initialRawUnits.set(structuredClone(conditionsUnits));
+      if (this.detectPlanningChanges()) this.#hasCapturedEditBaseline.set(true);
 
       if (hasConditions) this.#conditionsApplied = true;
+    });
+    effect(() => {
+      if (!this.detectPlanningChanges() || !this.#hasCapturedEditBaseline()) return;
+      this.formSnapshotChanged.emit({
+        section: 'shooting-conditions',
+        baseline: {
+          series: this.#initialSeriesData(),
+          units: this.#conditionSnapshotUnits(this.#initialSeriesData()),
+          rawSeries: this.#initialRawConditions(),
+          rawUnits: this.#initialRawUnits(),
+        },
+        current: this.#conditionSnapshot(),
+        valueReferences: {
+          targetTypeId: this.targetTypes() ?? [],
+          targetMaterialId: this.targetMaterials() ?? [],
+          targetDimensionsId: (this.targetDimensions() ?? []).map((dimension) => ({
+            id: dimension.id,
+            name: dimension.label,
+          })),
+          targetThicknessId: this.targetThicknesses() ?? [],
+          impactZoneId: this.impactZones() ?? [],
+        },
+        valid: this.seriesForm().valid(),
+      });
     });
     effect(() => {
       const status = this.updateConditionsSource.status();
@@ -880,22 +946,22 @@ export class ShootingConditionsComponent implements OnInit {
         required(shotPath.shotId);
         required(shotPath.impactZoneId);
 
-        disabled(shotPath.date, () => this.readonly());
-        disabled(shotPath.impactZoneId, () => this.readonly());
-        disabled(shotPath.targetTypeId, () => this.readonly());
-        disabled(shotPath.targetMaterialId, () => this.readonly());
-        disabled(shotPath.targetDimensionsId, () => this.readonly());
-        disabled(shotPath.targetThicknessId, () => this.readonly());
-        disabled(shotPath.distance, () => this.readonly());
-        disabled(shotPath.targetInclination, () => this.readonly());
-        disabled(shotPath.orientation, () => this.readonly());
-        disabled(shotPath.elevation, () => this.readonly());
-        disabled(shotPath.angle, () => this.readonly());
-        disabled(shotPath.range, () => this.readonly());
-        disabled(shotPath.functioningHeight, () => this.readonly());
-        disabled(shotPath.powderWeight, () => this.readonly());
-        disabled(shotPath.projectileWeight, () => this.readonly());
-        disabled(shotPath.nominalSpeed, () => this.readonly());
+        disabled(shotPath.date, ({ valueOf }) => this.#isShotReadonly(valueOf(shotPath.shotId)));
+        disabled(shotPath.impactZoneId, ({ valueOf }) => this.#isShotReadonly(valueOf(shotPath.shotId)));
+        disabled(shotPath.targetTypeId, ({ valueOf }) => this.#isShotReadonly(valueOf(shotPath.shotId)));
+        disabled(shotPath.targetMaterialId, ({ valueOf }) => this.#isShotReadonly(valueOf(shotPath.shotId)));
+        disabled(shotPath.targetDimensionsId, ({ valueOf }) => this.#isShotReadonly(valueOf(shotPath.shotId)));
+        disabled(shotPath.targetThicknessId, ({ valueOf }) => this.#isShotReadonly(valueOf(shotPath.shotId)));
+        disabled(shotPath.distance, ({ valueOf }) => this.#isShotReadonly(valueOf(shotPath.shotId)));
+        disabled(shotPath.targetInclination, ({ valueOf }) => this.#isShotReadonly(valueOf(shotPath.shotId)));
+        disabled(shotPath.orientation, ({ valueOf }) => this.#isShotReadonly(valueOf(shotPath.shotId)));
+        disabled(shotPath.elevation, ({ valueOf }) => this.#isShotReadonly(valueOf(shotPath.shotId)));
+        disabled(shotPath.angle, ({ valueOf }) => this.#isShotReadonly(valueOf(shotPath.shotId)));
+        disabled(shotPath.range, ({ valueOf }) => this.#isShotReadonly(valueOf(shotPath.shotId)));
+        disabled(shotPath.functioningHeight, ({ valueOf }) => this.#isShotReadonly(valueOf(shotPath.shotId)));
+        disabled(shotPath.powderWeight, ({ valueOf }) => this.#isShotReadonly(valueOf(shotPath.shotId)));
+        disabled(shotPath.projectileWeight, ({ valueOf }) => this.#isShotReadonly(valueOf(shotPath.shotId)));
+        disabled(shotPath.nominalSpeed, ({ valueOf }) => this.#isShotReadonly(valueOf(shotPath.shotId)));
 
         apply(shotPath.orientation, boundedNumberSchema(0, MAX_ANGULAR_VALUE));
         max(shotPath.elevation, MAX_ANGULAR_VALUE);
@@ -935,9 +1001,9 @@ export class ShootingConditionsComponent implements OnInit {
     serieIdx: number,
     shotIdx: number,
     field: keyof Shot,
-    change: { value: string; unit: string } | null,
+    change: { value: string | number | null; unit: string } | null,
   ): void {
-    if (this.readonly()) return;
+    if (this.#isShotReadonly(this.seriesSignal()[serieIdx]?.shots[shotIdx]?.shotId)) return;
     if (!change) return;
     this.seriesSignal.update((series) => {
       const updated = this.#deepClone(series);
@@ -945,8 +1011,11 @@ export class ShootingConditionsComponent implements OnInit {
       if (!shot) return series;
 
       // Valor numérico
-      const numericValue = parseFloat(change.value.replace(',', '.'));
-      (shot as Record<string, unknown>)[field as string] = isNaN(numericValue) ? 0 : numericValue;
+      const rawValue = change.value;
+      if (rawValue === null || (typeof rawValue === 'string' && rawValue.trim() === '')) return series;
+      const numericValue = typeof rawValue === 'number' ? rawValue : Number(rawValue);
+      if (!Number.isFinite(numericValue)) return series;
+      (shot as Record<string, unknown>)[field as string] = numericValue;
 
       // Unidad asociada (campo *Unit)
       const unitField = `${field as string}Unit`;
@@ -957,7 +1026,7 @@ export class ShootingConditionsComponent implements OnInit {
   }
 
   onTargetTypeChange(serieIdx: number, shotIdx: number, targetTypeId: string | null): void {
-    if (this.readonly()) return;
+    if (this.#isShotReadonly(this.seriesSignal()[serieIdx]?.shots[shotIdx]?.shotId)) return;
     this.seriesSignal.update((series) =>
       series.map((serie, currentSerieIdx) =>
         currentSerieIdx === serieIdx
@@ -987,7 +1056,7 @@ export class ShootingConditionsComponent implements OnInit {
   }
 
   openMassiveConfigurationDialog() {
-    if (this.readonly()) {
+    if (this.readonly() || this.detectPlanningChanges()) {
       return;
     }
     this.#dialog.open(MassiveConfigurationDialog, {
@@ -1003,7 +1072,7 @@ export class ShootingConditionsComponent implements OnInit {
   }
 
   saveForm() {
-    if (this.readonly()) {
+    if (this.readonly() || this.detectPlanningChanges()) {
       return;
     }
     const formData = this.getFormValues();
@@ -1015,7 +1084,36 @@ export class ShootingConditionsComponent implements OnInit {
     if (this.readonly()) {
       return;
     }
-    this.seriesSignal.set(this.#deepClone(this.#initialSeriesData));
+    this.seriesSignal.set(this.#deepClone(this.#initialSeriesData()));
+  }
+
+  #conditionSnapshotUnits(series: Serie[]) {
+    const firstShot = series[0]?.shots[0];
+    return firstShot
+      ? {
+          distanceUnit: firstShot.distanceUnit,
+          orientationUnit: firstShot.orientationUnit,
+          targetInclinationUnit: firstShot.targetInclinationUnit,
+          elevationUnit: firstShot.elevationUnit,
+          angleUnit: firstShot.angleUnit,
+          rangeUnit: firstShot.rangeUnit,
+          functioningHeightUnit: firstShot.functioningHeightUnit,
+          nominalSpeedUnit: firstShot.nominalSpeedUnit,
+          powderWeightUnit: firstShot.powderWeightUnit,
+          projectileWeightUnit: firstShot.projectileWeightUnit,
+        }
+      : {};
+  }
+
+  #isShotReadonly(shotId: unknown): boolean {
+    return (
+      this.readonly() ||
+      (this.detectPlanningChanges() && typeof shotId === 'string' && this.executedShotIds().includes(shotId))
+    );
+  }
+
+  protected isShotReadonly(shotId: string): boolean {
+    return this.#isShotReadonly(shotId);
   }
 
   #deepClone(series: Serie[]): Serie[] {

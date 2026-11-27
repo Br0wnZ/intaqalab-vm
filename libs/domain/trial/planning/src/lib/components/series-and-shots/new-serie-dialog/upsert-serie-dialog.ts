@@ -21,6 +21,7 @@ type Upsert = {
   numberOfShots?: number;
   observations?: string;
   isEditing: boolean;
+  detectPlanningChanges?: boolean;
 };
 
 @Component({
@@ -156,6 +157,10 @@ export class UpsertSerieDialog {
       submission: {
         action: async (formTree) => {
           const value = formTree().value();
+          if (this.data.detectPlanningChanges) {
+            this.#dialogRef.close(value);
+            return;
+          }
           if (this.isEditMode()) {
             const data: UpsertTrialSerieRequest = {
               id: this.data.serieId ?? '',

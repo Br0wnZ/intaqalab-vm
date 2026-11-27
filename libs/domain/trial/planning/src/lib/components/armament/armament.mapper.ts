@@ -13,6 +13,7 @@ export function mapBackendToLocal(seriesArmament: SeriesArmamentData[]): Armamen
     shots: series.shots.map((shot) => ({
       shotId: shot.shotId,
       armament: {
+        id: shot.armament?.id,
         weaponType: ((shot.armament?.itemType ?? shot.armament?.weaponType)?.toLowerCase() as SpecimenType) ?? '',
         weaponName: shot.armament?.weaponName ?? '',
         weaponExternalId: shot.armament?.weaponExternalId?.toString() ?? '',
@@ -52,6 +53,7 @@ export function buildSeriesFromStore(
         shotId: shot.id,
         globalNumber: shot.globalNumber,
         armament: {
+          id: existing?.id,
           weaponType: existing?.weaponType ?? '',
           weaponName: existing?.weaponName ?? '',
           weaponExternalId: existing?.weaponExternalId?.toString() ?? '',

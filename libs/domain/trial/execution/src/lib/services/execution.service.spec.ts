@@ -2,7 +2,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, type TestRequest, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { provideTestingEnvironment } from '@intaqalab/config';
+import { SKIP_ERROR_TOAST_STATUSES, provideTestingEnvironment } from '@intaqalab/config';
 import {
   AngleUnitEnum,
   CadenceUnitEnum,
@@ -14,6 +14,7 @@ import {
 import { waitFor } from '@testing-library/angular';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { ExecutionTransitionService } from '../data-access/execution/state/execution-transition.service';
 import {
   EquipmentTypeEnum,
   type JltMaoBulkConfigurationRequest,
@@ -61,7 +62,7 @@ vi.mock('@intaqalab/config', async (importOriginal) => {
     ...actual,
     injectExecutionEndpoint: () => 'http://localhost:3000/api/execution',
     injectPlanningEndpoint: () => 'http://localhost:3000/api/planning',
-    injectFireTrialsEndpoint: () => 'http://localhost:3000/api/fire-trials',
+    injectFireTrialsEndpoint: () => 'http://localhost:3000/api/fire-trials-api/1.1.0/fire-trials',
     injectWharehouseEndpoint: () => 'http://localhost:3000/api/warehouse',
   };
 });
@@ -85,6 +86,20 @@ describe('ExecutionService', () => {
 
   it('should be created', () => {
     expect(service).toBeTruthy();
+  });
+
+  it('reactivates a trial through the fire trials endpoint', async () => {
+    const transitions = TestBed.inject(ExecutionTransitionService);
+    const pending = transitions.reactivateExecution(DEMO_TRIAL_ID);
+    const request = httpMock.expectOne(
+      `http://localhost:3000/api/fire-trials-api/1.1.0/fire-trials/${DEMO_TRIAL_ID}/reactivate`,
+    );
+
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toBeNull();
+    expect(request.request.context.get(SKIP_ERROR_TOAST_STATUSES)).toEqual([403]);
+    request.flush(null, { status: 204, statusText: 'No Content' });
+    await expect(pending).resolves.toBeNull();
   });
 
   describe('trial overpressure info', () => {
@@ -446,14 +461,18 @@ describe('ExecutionService', () => {
 
     // Pause
     const pausePromise = service.pauseExecution(DEMO_TRIAL_ID);
-    const pauseReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/pause`);
+    const pauseReq = httpMock.expectOne(
+      `http://localhost:3000/api/fire-trials-api/1.1.0/fire-trials/${DEMO_TRIAL_ID}/pause`,
+    );
     expect(pauseReq.request.method).toBe('POST');
     pauseReq.flush(null, { status: 204, statusText: 'No Content' });
     await pausePromise;
 
     // Interrupt
     const interruptPromise = service.interruptExecution(DEMO_TRIAL_ID, 'anomaly');
-    const interruptReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/interrupt`);
+    const interruptReq = httpMock.expectOne(
+      `http://localhost:3000/api/fire-trials-api/1.1.0/fire-trials/${DEMO_TRIAL_ID}/interrupt`,
+    );
     expect(interruptReq.request.method).toBe('POST');
     expect(interruptReq.request.body).toEqual({ reason: 'anomaly' });
     interruptReq.flush(null, { status: 204, statusText: 'No Content' });
@@ -461,14 +480,18 @@ describe('ExecutionService', () => {
 
     // Resume
     const resumePromise = service.resumeExecution(DEMO_TRIAL_ID);
-    const resumeReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/resume`);
+    const resumeReq = httpMock.expectOne(
+      `http://localhost:3000/api/fire-trials-api/1.1.0/fire-trials/${DEMO_TRIAL_ID}/resume`,
+    );
     expect(resumeReq.request.method).toBe('POST');
     resumeReq.flush(null, { status: 204, statusText: 'No Content' });
     await resumePromise;
 
     // Cancel
     const cancelPromise = service.cancelExecution(DEMO_TRIAL_ID, 'abort');
-    const cancelReq = httpMock.expectOne(`${EXECUTION_BASE_URL}/cancel`);
+    const cancelReq = httpMock.expectOne(
+      `http://localhost:3000/api/fire-trials-api/1.1.0/fire-trials/${DEMO_TRIAL_ID}/cancel`,
+    );
     expect(cancelReq.request.method).toBe('POST');
     expect(cancelReq.request.body).toEqual({ reason: 'abort' });
     cancelReq.flush(null, { status: 204, statusText: 'No Content' });
@@ -1139,7 +1162,7 @@ describe('ExecutionService', () => {
     const weaponsPromise = service.loadArmamentEquipmentItems('WEAPON');
     TestBed.tick();
 
-    const weaponsReq = httpMock.expectOne(`${PLANNING_ROOT_URL}/equipment/items?itemType=WEAPON`);
+    const weaponsReq = httpMock.expectOne(`${PLANNING_ROOT_URL}/equipment/items?itemType=WEAPON&status=IN_USE`);
     expect(weaponsReq.request.method).toBe('GET');
     weaponsReq.flush({ items: mockWeapons });
     TestBed.tick();
@@ -1150,7 +1173,7 @@ describe('ExecutionService', () => {
     const mortarsPromise = service.loadArmamentEquipmentItems('MORTAR');
     TestBed.tick();
 
-    const mortarsReq = httpMock.expectOne(`${PLANNING_ROOT_URL}/equipment/items?itemType=MORTAR`);
+    const mortarsReq = httpMock.expectOne(`${PLANNING_ROOT_URL}/equipment/items?itemType=MORTAR&status=IN_USE`);
     expect(mortarsReq.request.method).toBe('GET');
     mortarsReq.flush({ items: [] });
     TestBed.tick();

@@ -1,6 +1,12 @@
 import { Router } from 'express';
 
-import { applyPlanningChanges, getPlanningChanges } from '../fixtures/execution/planning-changes-store';
+import {
+  type CreatePlanningChange,
+  type PlanningChangeResourceType,
+  applyPlanningChanges,
+  createPlanningChanges,
+  getPlanningChanges,
+} from '../fixtures/execution/planning-changes-store';
 import {
   approveModification,
   getPlanningModifications,
@@ -15,6 +21,39 @@ import {
 } from '../fixtures/execution/planning-modifications-store';
 
 export const planningModificationsRouter = Router();
+
+const CHANGE_RESOURCE_TYPES = new Set<PlanningChangeResourceType>([
+  'PLANNING_INFO',
+  'SHOT_CONDITIONS',
+  'MUNITION',
+  'MUNITION_COMPONENT',
+  'ARMAMENT',
+]);
+
+function parseCreateChange(value: unknown): CreatePlanningChange | null {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return null;
+  const record = value as Record<string, unknown>;
+  if (
+    typeof record['resourceType'] !== 'string' ||
+    !CHANGE_RESOURCE_TYPES.has(record['resourceType'] as PlanningChangeResourceType) ||
+    typeof record['resourceId'] !== 'string' ||
+    typeof record['field'] !== 'string' ||
+    record['operation'] !== 'UPDATE' ||
+    !(record['newValue'] === null || typeof record['newValue'] === 'string') ||
+    (record['oldValue'] !== undefined && !(record['oldValue'] === null || typeof record['oldValue'] === 'string'))
+  ) {
+    return null;
+  }
+
+  return {
+    resourceType: record['resourceType'] as PlanningChangeResourceType,
+    resourceId: record['resourceId'],
+    field: record['field'],
+    operation: 'UPDATE',
+    oldValue: record['oldValue'] as string | null | undefined,
+    newValue: record['newValue'],
+  };
+}
 
 // GET /centers/:centerId/fire-trials/:fireTrialId/planning/modifications
 planningModificationsRouter.get('/:centerId/fire-trials/:fireTrialId/planning/modifications', (req, res) => {
@@ -176,6 +215,46 @@ planningModificationsRouter.get('/:centerId/fire-trials/:fireTrialId/planning/ch
 
   const changes = getPlanningChanges(req.params['fireTrialId']);
   res.status(200).json(changes);
+});
+
+// POST /centers/:centerId/fire-trials/:fireTrialId/planning/changes
+planningModificationsRouter.post('/:centerId/fire-trials/:fireTrialId/planning/changes', (req, res) => {
+  if (req.query['error'] === 'true') {
+    res.status(500).json({
+      title: 'Internal Server Error',
+      status: 500,
+      detail: 'Simulated error creating planning changes',
+    });
+    return;
+  }
+
+  const body: unknown = req.body;
+  if (typeof body !== 'object' || body === null || Array.isArray(body)) {
+    res.status(400).json({ title: 'Bad Request', status: 400, detail: 'INVALID_CREATE_CHANGES_REQUEST' });
+    return;
+  }
+  const rawChanges = (body as Record<string, unknown>)['changes'];
+  if (!Array.isArray(rawChanges) || rawChanges.length === 0) {
+    res.status(400).json({ title: 'Bad Request', status: 400, detail: 'INVALID_CREATE_CHANGES_REQUEST' });
+    return;
+  }
+
+  const changes = rawChanges.map(parseCreateChange);
+  if (changes.some((change) => change === null)) {
+    res.status(400).json({ title: 'Bad Request', status: 400, detail: 'INVALID_PLANNING_CHANGE' });
+    return;
+  }
+
+  const created = createPlanningChanges(
+    req.params['fireTrialId'],
+    changes.filter((change): change is CreatePlanningChange => change !== null),
+  );
+  if (!created) {
+    res.status(409).json({ title: 'Conflict', status: 409, detail: 'PLANNING_CHANGE_CONFLICT' });
+    return;
+  }
+
+  res.status(201).json(created);
 });
 
 // POST /centers/:centerId/fire-trials/:fireTrialId/planning/changes/apply

@@ -1,4 +1,5 @@
 import type { Request } from 'express';
+import { randomUUID } from 'node:crypto';
 
 import { getFixture } from '../../utils';
 import { getAcceptedChanges, resolveRevision } from '../trial-planning/planning-revision';
@@ -20,6 +21,7 @@ interface ShotArmamentData {
 }
 
 interface ArmamentData {
+  id: string;
   weaponType?: string;
   weaponName?: string;
   /** integer según Swagger */
@@ -68,7 +70,7 @@ function getBaselineArmament(fireTrialId: string): TrialArmamentResponse {
     return storedData;
   }
 
-  const clonedFixture = JSON.parse(JSON.stringify(defaultFixture)) as TrialArmamentResponse;
+  const clonedFixture = structuredClone(defaultFixture);
   trialArmamentStore.set(fireTrialId, clonedFixture);
   return clonedFixture;
 }
@@ -79,7 +81,7 @@ export function updateArmamentDispatcher(req: Request): TrialArmamentResponse {
 
   let currentData = trialArmamentStore.get(fireTrialId);
   if (!currentData) {
-    currentData = JSON.parse(JSON.stringify(defaultFixture)) as TrialArmamentResponse;
+    currentData = structuredClone(defaultFixture);
   }
 
   for (const shotUpdate of body.shots) {
@@ -87,7 +89,7 @@ export function updateArmamentDispatcher(req: Request): TrialArmamentResponse {
       const shot = series.shots.find((s) => s.shotId === shotUpdate.shotId);
       if (shot) {
         if (!shot.armament) {
-          shot.armament = {};
+          shot.armament = { id: randomUUID() };
         }
 
         if (shotUpdate.weaponType !== undefined) {

@@ -15,6 +15,8 @@ export enum SpecimenType {
  * (Swagger planning-api v1.3.0 → TrialArmamentResponse).
  */
 export type ArmamentData = {
+  /** UUID de la asignación publicado por backend; resourceId de cambios ARMAMENT (nunca shotId ni ID de catálogo). */
+  id?: string;
   weaponType?: SpecimenType | '';
   /** Alias que devuelve el backend en el GET en lugar de weaponType. */
   itemType?: string;

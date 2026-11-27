@@ -12,11 +12,13 @@ import { provideTestingEnvironment } from '@intaqalab/config';
 import { AuthService, Role } from '@intaqalab/core';
 import { TrialsDataService } from '@intaqalab/data-access';
 import {
+  PlanningArmamentService,
   PlanningConditionsService,
   PlanningMeasuresService,
+  PlanningMunitionsService,
   PlanningSeriesService,
 } from '@intaqalab/data-access-planning';
-import { type FireTrial, QualificationTypeEnum } from '@intaqalab/models';
+import { type FireTrial, QualificationTypeEnum, TrialStatus } from '@intaqalab/models';
 import { createMockResource } from '@intaqalab/utils/testing/core';
 import { provideTranslateService } from '@ngx-translate/core';
 import { render, screen } from '@testing-library/angular';
@@ -33,6 +35,7 @@ import {
   ExecutionStateService,
   ExecutionTransitionService,
   JltPreparationService,
+  PlanningChangesService,
   PlanningModificationsService,
   SecurityCountdownService,
   WidgetPreferencesService,
@@ -144,6 +147,7 @@ function createMockExecutionService(
     pauseExecution: vi.fn().mockResolvedValue(undefined),
     interruptExecution: vi.fn().mockResolvedValue(undefined),
     resumeExecution: vi.fn().mockResolvedValue(undefined),
+    reactivateExecution: vi.fn().mockResolvedValue(undefined),
     cancelExecution: vi.fn().mockResolvedValue(undefined),
     finishExecution: vi.fn().mockResolvedValue(undefined),
     updateExecutionPlanning: vi.fn(),
@@ -183,14 +187,14 @@ function createMockExecutionService(
   };
 }
 
-function createTrialsDataServiceMock() {
+function createTrialsDataServiceMock(status = TrialStatus.IN_PROGRESS) {
   return {
     byIdResource: createMockResource<FireTrial>({
       id: 'b5b4eab5-4e5d-7f6a-1b4c-4d5e6f7a8b9c',
       trialNumber: '034A/25',
       client: { id: 'client-1', name: 'RHEINMETALL EXPAL MUNITIONS' },
       description: 'Proyectil de 155 mm SMK RP ERG2A1',
-      status: 'IN_PROGRESS',
+      status,
     } as unknown as FireTrial),
     loadById: vi.fn(),
   };
@@ -202,14 +206,16 @@ describe('Execution', () => {
     executionService = createMockExecutionService(),
     roles = [Role.INTAQALAB_ADMIN],
     isPlanningLoading = false,
+    trialStatus = TrialStatus.IN_PROGRESS,
   }: {
     fireTrialId?: string;
     executionService?: MockExecutionService;
     roles?: Role[];
     isPlanningLoading?: boolean;
+    trialStatus?: TrialStatus;
   } = {}) => {
     const user = userEvent.setup();
-    const trialsDataService = createTrialsDataServiceMock();
+    const trialsDataService = createTrialsDataServiceMock(trialStatus);
     const toastrService = { warning: vi.fn() };
     const plannedMeasures = Object.values(EquipmentMagnitudeTagEnum).map((tag, index) => ({
       id: `measure-${index}`,
@@ -226,6 +232,7 @@ describe('Execution', () => {
             },
           ],
         }),
+        reload: vi.fn(),
       },
       catalog: () =>
         plannedMeasures.map(
@@ -284,6 +291,8 @@ describe('Execution', () => {
             reload: vi.fn(),
           },
         },
+        { provide: PlanningMunitionsService, useValue: { load: vi.fn(), reload: vi.fn() } },
+        { provide: PlanningArmamentService, useValue: { load: vi.fn(), reload: vi.fn() } },
         {
           provide: TrialsDataService,
           useValue: trialsDataService,
@@ -323,6 +332,10 @@ describe('Execution', () => {
         {
           provide: ExecutionTransitionService,
           useValue: executionService,
+        },
+        {
+          provide: PlanningChangesService,
+          useValue: { fetch: vi.fn().mockResolvedValue([]), load: vi.fn(), reload: vi.fn() },
         },
         {
           provide: PlanningModificationsService,
@@ -542,31 +555,61 @@ describe('Execution', () => {
     expect(await slideToggle.isChecked()).toBe(true);
   });
 
-  it('opens the actions menu and can trigger execution start, pause, resume, and finish', async () => {
-    const { loader, executionService } = await setup();
+  it('shows pause, interrupt, cancel, and finish for in-progress trials', async () => {
+    const { loader } = await setup();
 
     const menu = await loader.getHarness(MatMenuHarness.with({ triggerText: /TRIAL_EXECUTION\.ACTIONS/i }));
-
-    // Start execution
     await menu.open();
-    const startItem = await menu.getItems({ text: /TRIAL_EXECUTION\.ACTION_START/i });
-    expect(startItem.length).toBe(1);
-    await startItem[0].click();
+
+    expect(await menu.getItems({ text: /TRIAL_EXECUTION\.ACTION_PAUSE/i })).toHaveLength(1);
+    expect(await menu.getItems({ text: /TRIAL_EXECUTION\.ACTION_STOP/i })).toHaveLength(1);
+    expect(await menu.getItems({ text: /TRIAL_EXECUTION\.ACTION_CANCEL/i })).toHaveLength(1);
+    expect(await menu.getItems({ text: /TRIAL_EXECUTION\.ACTION_FINISH/i })).toHaveLength(1);
+    expect(await menu.getItems({ text: /TRIAL_EXECUTION\.ACTION_RESUME/i })).toHaveLength(0);
+    expect(await menu.getItems({ text: /TRIAL_EXECUTION\.ACTION_START/i })).toHaveLength(0);
+  });
+
+  it('shows only the standalone start button for planned trials', async () => {
+    const { user, executionService } = await setup({ trialStatus: TrialStatus.PLANNED });
+
+    expect(screen.queryByRole('button', { name: /TRIAL_EXECUTION\.ACTIONS/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /TRIAL_EXECUTION\.ACTION_START/i }));
     expect(executionService.startExecution).toHaveBeenCalledWith('b5b4eab5-4e5d-7f6a-1b4c-4d5e6f7a8b9c');
+  });
 
-    // Resume execution
-    await menu.open();
-    const resumeItem = await menu.getItems({ text: /TRIAL_EXECUTION\.ACTION_RESUME/i });
-    expect(resumeItem.length).toBe(1);
-    await resumeItem[0].click();
-    expect(executionService.resumeExecution).toHaveBeenCalledWith('b5b4eab5-4e5d-7f6a-1b4c-4d5e6f7a8b9c');
+  it('reactivates canceled trials through the standalone reactivate button', async () => {
+    const { user, executionService } = await setup({ trialStatus: TrialStatus.CANCELLED });
 
-    // Finish execution
+    expect(screen.queryByRole('button', { name: /TRIAL_EXECUTION\.ACTIONS/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /TRIAL_EXECUTION\.ACTION_START/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /TRIAL_EXECUTION\.ACTION_REACTIVATE/i }));
+    expect(executionService.reactivateExecution).toHaveBeenCalledWith('b5b4eab5-4e5d-7f6a-1b4c-4d5e6f7a8b9c');
+    expect(executionService.resumeExecution).not.toHaveBeenCalled();
+  });
+
+  it('shows resume and permitted planning actions in menu for interrupted trials', async () => {
+    const { loader } = await setup({ trialStatus: TrialStatus.INTERRUPTED });
+    const menu = await loader.getHarness(MatMenuHarness.with({ triggerText: /TRIAL_EXECUTION\.ACTIONS/i }));
     await menu.open();
-    const finishItem = await menu.getItems({ text: /TRIAL_EXECUTION\.ACTION_FINISH/i });
-    expect(finishItem.length).toBe(1);
-    await finishItem[0].click();
-    expect(executionService.finishExecution).toHaveBeenCalledWith('b5b4eab5-4e5d-7f6a-1b4c-4d5e6f7a8b9c');
+
+    expect(await menu.getItems({ text: /TRIAL_EXECUTION\.ACTION_RESUME/i })).toHaveLength(1);
+    expect(await menu.getItems({ text: /TRIAL_EXECUTION\.ACTION_MODIFY_PLANNING/i })).toHaveLength(1);
+    expect(await menu.getItems({ text: /TRIAL_EXECUTION\.ACTION_CANCEL/i })).toHaveLength(0);
+  });
+
+  it('shows resume and cancel actions in menu for started trials', async () => {
+    const { loader } = await setup({ trialStatus: TrialStatus.STARTED });
+    const menu = await loader.getHarness(MatMenuHarness.with({ triggerText: /TRIAL_EXECUTION\.ACTIONS/i }));
+
+    await menu.open();
+
+    expect(await menu.getItems({ text: /TRIAL_EXECUTION\.ACTION_RESUME/i })).toHaveLength(1);
+    expect(await menu.getItems({ text: /TRIAL_EXECUTION\.ACTION_CANCEL/i })).toHaveLength(1);
+    expect(await menu.getItems({ text: /TRIAL_EXECUTION\.ACTION_PAUSE/i })).toHaveLength(0);
+    expect(await menu.getItems({ text: /TRIAL_EXECUTION\.ACTION_STOP/i })).toHaveLength(0);
+    expect(await menu.getItems({ text: /TRIAL_EXECUTION\.ACTION_FINISH/i })).toHaveLength(0);
   });
 
   it('opens the actions menu and can trigger the interrupt dialog', async () => {

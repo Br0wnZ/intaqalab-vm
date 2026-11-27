@@ -1,50 +1,157 @@
-import { Component, input, output } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import type { PlanningSeriesShotItem } from '@intaqalab/data-access-planning';
+import type { PlanningValueReferences } from '@intaqalab/planning';
 import { StopClick } from '@intaqalab/ui';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import type {
+  PlanningChange as LegacyPlanningChange,
   ModificationClassification,
-  PlanningChange,
   PlanningModification,
 } from '../../../../data-access/planning-modifications';
+import { formatPlanningChangeValue } from '../../../../data-access/planning-modifications/planning-change-value.mapper';
+import type {
+  PlanningChange as ApiPlanningChange,
+  PlanningChangeRow,
+  PlanningDetectedChange,
+} from '../../../models/planning-changes.models';
 import type { ModificationClassificationChangeEvent } from '../modify-planning-dialog.models';
+import type { PlanningChangeInclusionChangeEvent } from '../modify-planning-dialog.models';
 
-export type PlanningModificationRow = PlanningModification | PlanningChange;
+export type PlanningModificationRow =
+  PlanningModification | LegacyPlanningChange | ApiPlanningChange | PlanningChangeRow | PlanningDetectedChange;
 
 const DISPLAYED_COLUMNS: ReadonlyArray<string> = [
+  'section',
   'parameter',
   'action',
   'previousValue',
   'newValue',
   'affectedShots',
   'status',
+  'include',
   'accept',
   'request',
 ];
 
 const FIELD_LABEL_MAP: Record<string, string> = {
-  goal: 'Objetivo',
-  temperature: 'Temperatura',
-  minTime: 'Tiempo mínimo',
-  maxTime: 'Tiempo máximo',
-  elevation: 'Elevación',
-  orientation: 'Orientación',
-  distance: 'Distancia',
-  powderWeight: 'Peso de pólvora',
-  projectileLot: 'Lote proyectil',
-  observations: 'Observaciones',
-  maxEmissionDates: 'Fechas máximas de emisión',
-  stanagCriteriaIds: 'Criterios STANAG',
-  'ratingCriteria.v0c.useful1Min': 'Tiempo mínimo',
+  goal: 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.GOAL',
+  temperature: 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.TEMPERATURE',
+  minTime: 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.TIME_MIN',
+  maxTime: 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.TIME_MAX',
+  elevation: 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.ELEVATION',
+  orientation: 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.ORIENTATION',
+  distance: 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.DISTANCE',
+  powderWeight: 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.POWDER_WEIGHT',
+  projectileLot: 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.BATCH',
+  batch: 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.BATCH',
+  observations: 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.OBSERVATIONS',
+  maxEmissionDates: 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.MAX_EMISSION_DATES',
+  stanagCriteriaIds: 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.STANAG_CRITERIA',
+  hypochelometricReviewBefore: 'TRIAL_PLANNING.GENERAL_DATA_SECTION.HYPOCHELOMETRIC_REVIEW_BEFORE_LABEL',
+  hypochelometricReviewAfter: 'TRIAL_PLANNING.GENERAL_DATA_SECTION.HYPOCHELOMETRIC_REVIEW_AFTER_LABEL',
+  requirements: 'TRIAL_PLANNING.GENERAL_DATA_SECTION.REQUERIMENTS_LABEL',
+  requeriments: 'TRIAL_PLANNING.GENERAL_DATA_SECTION.REQUERIMENTS_LABEL',
+  additionalInfo: 'TRIAL_PLANNING.GENERAL_DATA_SECTION.ADDITIONAL_INFO_LABEL',
+  percentageTechnicalUnits: 'TRIAL_PLANNING.GENERAL_DATA_SECTION.UNITS_PERCENTAGE_LABEL',
+  percentageEndTrial: 'TRIAL_PLANNING.GENERAL_DATA_SECTION.END_PERCENTAGE_LABEL',
+  daysSignReport: 'TRIAL_PLANNING.GENERAL_DATA_SECTION.DAYS_SIGN_REPORT_LABEL',
+  date: 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.DATE',
+  targetTypeId: 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.TARGET',
+  targetMaterialId: 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.TARGET_MATERIAL',
+  targetDimensionsId: 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.TARGET_DIMENSIONS',
+  targetThicknessId: 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.TARGET_THICKNESS',
+  targetInclination: 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.INCLINATION',
+  angle: 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.ANGLE',
+  range: 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.RANGE',
+  impactZoneId: 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.IMPACT_ZONE',
+  loadingZoneId: 'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.HEADERS.ZONE_MODULES',
+  functioningHeight: 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.FUNCTIONING_HEIGHT',
+  nominalSpeed: 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.NOMINAL_VELOCITY',
+  projectileWeight: 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.PROJECTILE_WEIGHT',
+  denominationId: 'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.DENOMINATION_LABEL',
+  maxAllowedErrors: 'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.MAX_FAILURES_LABEL',
+  'reconditioning.temperature': 'TRIAL_PLANNING.MUNITIONS.CONDITIONING_FIELDS.TEMPERATURE_LABEL',
+  'reconditioning.tolerance': 'TRIAL_PLANNING.MUNITIONS.CONDITIONING_FIELDS.TOLERANCE_LABEL',
+  'reconditioning.timeMin': 'TRIAL_PLANNING.MUNITIONS.CONDITIONING_FIELDS.MIN_TIME_LABEL',
+  'reconditioning.timeMax': 'TRIAL_PLANNING.MUNITIONS.CONDITIONING_FIELDS.MAX_TIME_LABEL',
+  'reconditioning.observations': 'TRIAL_PLANNING.MUNITIONS.CONDITIONING_FIELDS.OBSERVATIONS_LABEL',
+  typeId: 'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.HEADERS.TYPE',
+  loadingZoneValue: 'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.HEADERS.ZONE_MODULES',
+  quantity: 'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.HEADERS.QUANTITY',
+  clientNumber: 'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.CLIENT_NUMBER_LABEL',
+  fuseWorkingModeId: 'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.FUZE_MODE_LABEL',
+  fuseMeasurement: 'TRIAL_PLANNING.MUNITIONS.COMPONENT_DETAIL_FORM.FUZE_GRADUATION_LABEL',
+  assignedShotIds: 'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.ASSOCIATED_SHOTS_LABEL',
+  selectedComponents: 'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.COMPONENT_SELECTOR_LABEL',
+  munitionTypeId: 'TRIAL_PLANNING.MUNITIONS.CONFIGURATION_FORM.MUNITION_TYPE_LABEL',
+  itemType: 'TRIAL_PLANNING.ARMAMENT.TABLE.TYPE',
+  weaponExternalId: 'TRIAL_PLANNING.ARMAMENT.TABLE.WEAPON',
+  tubeExternalId: 'TRIAL_PLANNING.ARMAMENT.TABLE.TUBE',
+  isInstrumented: 'TRIAL_PLANNING.ARMAMENT.TABLE.INSTRUMENTED',
+  lifeUsefulPercentage: 'TRIAL_PLANNING.ARMAMENT.TABLE.LIFE',
+  measureUnit: 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.MEASURE_UNIT',
+  minLimit: 'TRIAL_PLANNING.MEASURES.LIMIT_CARD.MIN_LIMIT',
+  maxLimit: 'TRIAL_PLANNING.MEASURES.LIMIT_CARD.MAX_LIMIT',
+  deviation: 'TRIAL_PLANNING.MEASURES.LIMIT_CARD.DEVIATION',
+  seriesConfiguration: 'TRIAL_PLANNING.MEASURES.SERIE_CONFIG',
+  name: 'TRIAL_PLANNING.SERIES_AND_SHOTS_SECTION.SERIES_TABLE.SERIE_NAME',
+  shotQuantity: 'TRIAL_PLANNING.SERIES_AND_SHOTS_SECTION.SERIES_TABLE.SHOTS_QUANTITY',
+  executionOrder: 'TRIAL_PLANNING.SERIES_AND_SHOTS_SECTION.SERIES_TABLE.EXECUTION_ORDER',
+  globalNumber: 'TRIAL_PLANNING.SERIES_AND_SHOTS_SECTION.SHOTS_TABLE.SHOT_NUMBER',
+  observation: 'COMMONS.OBSERVATIONS',
+  Disparo: 'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TABLE.SHOT',
+  Serie: 'TRIAL_PLANNING.ARMAMENT.TABLE.SERIE',
+  Medida: 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.MEASURE',
+  'Configuración de munición': 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.MUNITION_CONFIGURATION',
+  'Componente de munición': 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.MUNITION_COMPONENT',
+  speedUnit: 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.SPEED_UNIT',
+  pressureUnit: 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.PRESSURE_UNIT',
+  distanceUnit: 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.DISTANCE_UNIT',
+  orientationUnit: 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.ORIENTATION_UNIT',
+  targetInclinationUnit: 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.TARGET_INCLINATION_UNIT',
+  elevationUnit: 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.ELEVATION_UNIT',
+  angleUnit: 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.ANGLE_UNIT',
+  rangeUnit: 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.RANGE_UNIT',
+  functioningHeightUnit: 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.FUNCTIONING_HEIGHT_UNIT',
+  nominalSpeedUnit: 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.SPEED_UNIT',
+  powderWeightUnit: 'TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.POWDER_WEIGHT_UNIT',
+};
+
+const RATING_PROPERTY_LABELS: Record<string, string> = {
+  v0c: 'V0C',
+  v0cMean: 'V0C_MEAN',
+  v0cStdDev: 'V0C_STD_DEV',
+  p: 'P',
+  pMean: 'P_MEAN',
+  projectile: 'PROJECTILE',
+  fuse: 'FUSE',
+  primer: 'PRIMER',
+};
+
+const RATING_LIMIT_LABELS: Record<string, string> = {
+  useful1Min: 'USEFUL_MIN',
+  useful1Max: 'USEFUL_MAX',
+  uselessMin: 'USELESS_MIN',
+  uselessMax: 'USELESS_MAX',
 };
 
 @Component({
   selector: 'inta-modifications-table',
-  imports: [MatTableModule, MatSlideToggleModule, MatIconModule, MatTooltipModule, StopClick, TranslatePipe],
+  imports: [
+    MatTableModule,
+    MatSlideToggleModule,
+    MatCheckboxModule,
+    MatIconModule,
+    MatTooltipModule,
+    StopClick,
+    TranslatePipe,
+  ],
   styles: [
     `
       .planning-slide-toggle {
@@ -72,12 +179,24 @@ const FIELD_LABEL_MAP: Record<string, string> = {
     } @else {
       <div class="overflow-x-auto border border-gray-200/80 rounded-xl bg-white shadow-xs">
         <table mat-table class="w-full" [dataSource]="modifications()">
+          <ng-container matColumnDef="section">
+            <th *matHeaderCellDef mat-header-cell class="font-normal text-gray-500 text-sm py-3.5 px-6">
+              {{ 'TRIAL_EXECUTION.PLANNING_MODIFICATION.COLUMNS.SECTION' | translate }}
+            </th>
+            <td *matCellDef="let row" mat-cell class="text-sm text-gray-700 font-normal py-4 px-6">
+              {{ getSectionLabel(row) | translate }}
+            </td>
+          </ng-container>
+
           <ng-container matColumnDef="parameter">
             <th *matHeaderCellDef mat-header-cell class="font-normal text-gray-500 text-sm py-3.5 px-6">
               {{ 'TRIAL_EXECUTION.PLANNING_MODIFICATION.COLUMNS.PARAMETER' | translate }}
             </th>
             <td *matCellDef="let row" mat-cell class="text-sm text-gray-700 font-normal py-4 px-6">
-              {{ getParameter(row) }}
+              {{ getParameter(row) | translate }}
+              @if (getRatingProperty(row); as property) {
+                · {{ property | translate }}
+              }
             </td>
           </ng-container>
 
@@ -93,7 +212,7 @@ const FIELD_LABEL_MAP: Record<string, string> = {
                 class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium"
                 [class]="getActionBadgeClass(row)"
               >
-                {{ getActionLabel(row) }}
+                {{ getActionLabel(row) | translate }}
               </span>
             </td>
           </ng-container>
@@ -121,7 +240,12 @@ const FIELD_LABEL_MAP: Record<string, string> = {
               {{ 'TRIAL_EXECUTION.PLANNING_MODIFICATION.COLUMNS.AFFECTED_SHOTS' | translate }}
             </th>
             <td *matCellDef="let row" mat-cell class="text-sm text-gray-600 font-normal py-4 px-6">
-              {{ getAffectedShots(row) }}
+              @for (globalNumber of getAffectedShotNumbers(row); track $index; let last = $last) {
+                {{ 'TRIAL_EXECUTION.PLANNING_MODIFICATION.SHOT_LABEL' | translate: { globalNumber }
+                }}{{ last ? '' : ', ' }}
+              } @empty {
+                {{ getAffectedShotCount(row) }}
+              }
             </td>
           </ng-container>
 
@@ -137,8 +261,30 @@ const FIELD_LABEL_MAP: Record<string, string> = {
                 class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium"
                 [class]="getStatusBadgeClass(row)"
               >
-                {{ getStatusLabel(row) }}
+                {{ getStatusLabel(row) | translate }}
               </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="include">
+            <th *matHeaderCellDef mat-header-cell class="font-normal text-gray-500 text-sm text-center py-3.5 px-4">
+              {{ 'TRIAL_EXECUTION.PLANNING_MODIFICATION.COLUMNS.APPLY' | translate }}
+            </th>
+            <td *matCellDef="let row" mat-cell class="text-center py-4 px-4">
+              @if (isRemoteDraft(row)) {
+                <mat-checkbox
+                  [checked]="isSelectedForApply(row)"
+                  [disabled]="disabled()"
+                  [attr.aria-label]="
+                    ('TRIAL_EXECUTION.PLANNING_MODIFICATION.COLUMNS.APPLY' | translate) +
+                    ' - ' +
+                    (getParameter(row) | translate)
+                  "
+                  (change)="includeChange.emit({ changeId: row.id, selected: $event.checked })"
+                />
+              } @else {
+                <span aria-hidden="true">—</span>
+              }
             </td>
           </ng-container>
 
@@ -160,7 +306,9 @@ const FIELD_LABEL_MAP: Record<string, string> = {
                   [checked]="isAcceptChecked(row)"
                   [disabled]="isClassificationDisabled(row)"
                   [attr.aria-label]="
-                    ('TRIAL_EXECUTION.PLANNING_MODIFICATION.COLUMNS.ACCEPT' | translate) + ' - ' + getParameter(row)
+                    ('TRIAL_EXECUTION.PLANNING_MODIFICATION.COLUMNS.ACCEPT' | translate) +
+                    ' - ' +
+                    (getParameter(row) | translate)
                   "
                   (change)="onToggleClassification(row, 'acepta')"
                 />
@@ -186,7 +334,9 @@ const FIELD_LABEL_MAP: Record<string, string> = {
                   [checked]="isRequestChecked(row)"
                   [disabled]="isClassificationDisabled(row)"
                   [attr.aria-label]="
-                    ('TRIAL_EXECUTION.PLANNING_MODIFICATION.COLUMNS.REQUEST' | translate) + ' - ' + getParameter(row)
+                    ('TRIAL_EXECUTION.PLANNING_MODIFICATION.COLUMNS.REQUEST' | translate) +
+                    ' - ' +
+                    (getParameter(row) | translate)
                   "
                   (change)="onToggleClassification(row, 'solicita')"
                 />
@@ -207,28 +357,69 @@ const FIELD_LABEL_MAP: Record<string, string> = {
 })
 export class ModificationsTable {
   readonly modifications = input<ReadonlyArray<PlanningModificationRow>>([]);
+  readonly shots = input<ReadonlyArray<PlanningSeriesShotItem>>([]);
+  readonly valueReferences = input<PlanningValueReferences>({});
+  readonly #translate = inject(TranslateService);
   readonly disabled = input<boolean>(false);
 
+  readonly #shotNumbers = computed(() => new Map(this.shots().map((shot) => [shot.id, shot.globalNumber])));
+
   readonly classificationChange = output<ModificationClassificationChangeEvent>();
+  readonly includeChange = output<PlanningChangeInclusionChangeEvent>();
 
   protected readonly displayedColumns = DISPLAYED_COLUMNS;
 
   protected getParameter(row: PlanningModificationRow): string {
-    if ('parameter' in row && row.parameter) {
-      return row.parameter;
+    const field = 'field' in row && row.field ? row.field : 'parameter' in row ? row.parameter : '';
+    if (field.startsWith('ratingCriteria.')) {
+      const limit = RATING_LIMIT_LABELS[field.split('.')[2]];
+      if (limit) return `TRIAL_EXECUTION.PLANNING_MODIFICATION.FIELDS.${limit}`;
     }
-    if ('field' in row && row.field) {
-      return FIELD_LABEL_MAP[row.field] ?? row.field;
-    }
+    if (field) return FIELD_LABEL_MAP[field] ?? field;
+    if ('parameter' in row && row.parameter) return row.parameter;
     return '-';
+  }
+
+  protected getRatingProperty(row: PlanningModificationRow): string | null {
+    if (!('field' in row) || !row.field?.startsWith('ratingCriteria.')) return null;
+    const property = RATING_PROPERTY_LABELS[row.field.split('.')[1]];
+    return property ? `TRIAL_PLANNING.RATING_CRITERIA.PROPERTIES.${property}` : null;
+  }
+
+  protected getSectionLabel(row: PlanningModificationRow): string {
+    if ('section' in row) {
+      return `TRIAL_EXECUTION.PLANNING_MODIFICATION.SECTIONS.${row.section.replaceAll('-', '_').toUpperCase()}`;
+    }
+    if ('resourceType' in row) {
+      const sectionByResource: Record<string, string> = {
+        PLANNING_INFO: 'GENERAL_DATA',
+        SHOT_CONDITIONS: 'SHOOTING_CONDITIONS',
+        MUNITION: 'MUNITIONS',
+        MUNITION_COMPONENT: 'MUNITIONS',
+        ARMAMENT: 'ARMAMENT',
+      };
+      return `TRIAL_EXECUTION.PLANNING_MODIFICATION.SECTIONS.${sectionByResource[row.resourceType] ?? 'GENERAL_DATA'}`;
+    }
+    return 'TRIAL_EXECUTION.PLANNING_MODIFICATION.SECTIONS.GENERAL_DATA';
   }
 
   protected isClassificationDisabled(row: PlanningModificationRow): boolean {
     if (this.disabled()) {
       return true;
     }
+    if ('persistable' in row) return !row.persistable || row.status !== 'READY';
+    if ('selectedForApply' in row) return row.status !== 'DRAFT' || !row.selectedForApply;
+    if (!('action' in row)) return true;
     const status = 'status' in row ? row.status : undefined;
-    return status !== 'BORRADOR' && status !== 'DRAFT';
+    return status !== 'BORRADOR';
+  }
+
+  protected isRemoteDraft(row: PlanningModificationRow): boolean {
+    return 'selectedForApply' in row && row.status === 'DRAFT';
+  }
+
+  protected isSelectedForApply(row: PlanningModificationRow): boolean {
+    return 'selectedForApply' in row && row.selectedForApply;
   }
 
   protected isAcceptChecked(row: PlanningModificationRow): boolean {
@@ -263,31 +454,41 @@ export class ModificationsTable {
 
   protected getPreviousValue(row: PlanningModificationRow): string {
     const val = 'previousValue' in row ? row.previousValue : 'oldValue' in row ? row.oldValue : null;
-    if (val === null || val === undefined || val === '') {
-      return '-';
-    }
-    return String(val);
+    return formatPlanningChangeValue(
+      val,
+      'field' in row ? (row.field ?? '') : row.parameter,
+      this.valueReferences(),
+      this.#translate.currentLang() ?? 'es',
+    );
   }
 
   protected getNewValue(row: PlanningModificationRow): string {
     const val = 'newValue' in row ? row.newValue : null;
-    if (val === null || val === undefined || val === '') {
-      return '-';
-    }
-    return String(val);
+    return formatPlanningChangeValue(
+      val,
+      'field' in row ? (row.field ?? '') : row.parameter,
+      this.valueReferences(),
+      this.#translate.currentLang() ?? 'es',
+    );
   }
 
-  protected getAffectedShots(row: PlanningModificationRow): string {
-    if ('affectedShots' in row && row.affectedShots) {
-      if (Array.isArray(row.affectedShots)) {
-        if (row.affectedShots.length === 0) return '-';
-        return row.affectedShots.join(', ');
-      }
-      return String(row.affectedShots);
-    }
-    if ('shotId' in row && row.shotId) {
-      return '1';
-    }
+  protected getAffectedShotNumbers(row: PlanningModificationRow): number[] {
+    const ids =
+      'affectedShots' in row && Array.isArray(row.affectedShots)
+        ? row.affectedShots
+        : 'shotId' in row && row.shotId
+          ? [row.shotId]
+          : 'resourceType' in row && row.resourceType === 'SHOT_CONDITIONS' && row.resourceId
+            ? [row.resourceId]
+            : [];
+    return [...new Set(ids)].flatMap((id) => {
+      const globalNumber = this.#shotNumbers().get(id);
+      return globalNumber === undefined ? [] : [globalNumber];
+    });
+  }
+
+  protected getAffectedShotCount(row: PlanningModificationRow): string {
+    if ('affectedShots' in row && typeof row.affectedShots === 'number') return String(row.affectedShots);
     return '-';
   }
 
@@ -295,68 +496,82 @@ export class ModificationsTable {
     if ('action' in row && row.action) {
       switch (row.action) {
         case 'Alta':
-          return 'Añadido';
+          return 'TRIAL_EXECUTION.PLANNING_MODIFICATION.ACTION_TYPES.ALTA';
         case 'Baja':
-          return 'Eliminado';
+          return 'TRIAL_EXECUTION.PLANNING_MODIFICATION.ACTION_TYPES.BAJA';
         case 'Modificación':
-          return 'Modificado';
+          return 'TRIAL_EXECUTION.PLANNING_MODIFICATION.ACTION_TYPES.MODIFICACION';
       }
     }
     if ('operation' in row && row.operation) {
-      if (row.oldValue === null) {
-        return 'Añadido';
+      const previousValue = 'oldValue' in row ? row.oldValue : 'previousValue' in row ? row.previousValue : undefined;
+      if (previousValue === null) {
+        return 'TRIAL_EXECUTION.PLANNING_MODIFICATION.ACTION_TYPES.ALTA';
       }
       if (row.newValue === null) {
-        return 'Eliminado';
+        return 'TRIAL_EXECUTION.PLANNING_MODIFICATION.ACTION_TYPES.BAJA';
       }
-      return 'Modificado';
+      return 'TRIAL_EXECUTION.PLANNING_MODIFICATION.ACTION_TYPES.MODIFICACION';
     }
-    return 'Modificado';
+    return 'TRIAL_EXECUTION.PLANNING_MODIFICATION.ACTION_TYPES.MODIFICACION';
   }
 
   protected getActionBadgeClass(row: PlanningModificationRow): string {
-    const label = this.getActionLabel(row);
-    switch (label) {
-      case 'Añadido':
+    const action = 'action' in row ? row.action : undefined;
+    switch (action) {
+      case 'Alta':
         return 'bg-[#eff6ff] text-[#2563eb]';
-      case 'Eliminado':
+      case 'Baja':
         return 'bg-red-50 text-red-600';
-      case 'Modificado':
+      case 'Modificación':
       default:
         return 'bg-[#fff7ed] text-[#ea580c]';
     }
   }
 
   protected getStatusLabel(row: PlanningModificationRow): string {
+    if ('localOnlyReason' in row && row.localOnlyReason === 'EXECUTED_SHOT') {
+      return 'TRIAL_EXECUTION.PLANNING_MODIFICATION.STATUS.EXECUTED_SHOT';
+    }
     const raw = 'status' in row ? row.status : '';
     switch (raw) {
       case 'ACEPTADO':
       case 'ACCEPTED':
-        return 'Aceptado';
+        return 'TRIAL_EXECUTION.PLANNING_MODIFICATION.STATUS.ACEPTADO';
       case 'PENDIENTE':
       case 'PENDING':
-        return 'Pendiente';
+        return 'TRIAL_EXECUTION.PLANNING_MODIFICATION.STATUS.PENDIENTE';
       case 'BORRADOR':
       case 'DRAFT':
-        return 'Borrador';
+        return 'TRIAL_EXECUTION.PLANNING_MODIFICATION.STATUS.BORRADOR';
       case 'RECHAZADO':
       case 'REJECTED':
-        return 'Rechazado';
+        return 'TRIAL_EXECUTION.PLANNING_MODIFICATION.STATUS.RECHAZADO';
+      case 'LOCAL_ONLY':
+        return 'TRIAL_EXECUTION.PLANNING_MODIFICATION.STATUS.LOCAL_ONLY';
+      case 'READY':
+        return 'TRIAL_EXECUTION.PLANNING_MODIFICATION.STATUS.READY';
       default:
         return String(raw);
     }
   }
 
   protected getStatusBadgeClass(row: PlanningModificationRow): string {
-    const label = this.getStatusLabel(row);
-    switch (label) {
-      case 'Aceptado':
+    const status = 'status' in row ? row.status : '';
+    switch (status) {
+      case 'ACEPTADO':
+      case 'ACCEPTED':
         return 'bg-[#ecfdf5] text-[#059669]';
-      case 'Pendiente':
+      case 'PENDIENTE':
+      case 'PENDING':
         return 'bg-[#fff1f2] text-[#e11d48]';
-      case 'Borrador':
+      case 'BORRADOR':
+      case 'DRAFT':
+      case 'READY':
         return 'bg-gray-100 text-gray-600';
-      case 'Rechazado':
+      case 'RECHAZADO':
+      case 'REJECTED':
+      case 'LOCAL_ONLY':
       default:
         return 'bg-red-50 text-red-700';
     }

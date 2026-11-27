@@ -22,10 +22,19 @@ import { SeriesAndShotsStore } from '../../+state/series-and-shots.store';
     </mat-dialog-content>
 
     <mat-dialog-actions>
-      <button mat-flat-button cdkFocusInitial [disabled]="store.isDeletingSerie()" (click)="onConfirm()">
+      <button
+        mat-flat-button
+        cdkFocusInitial
+        [disabled]="!data.detectPlanningChanges && store.isDeletingSerie()"
+        (click)="onConfirm()"
+      >
         {{ data.confirmText || 'Confirmar' }}
       </button>
-      <button mat-stroked-button [disabled]="store.isDeletingSerie()" (click)="onCancel()">
+      <button
+        mat-stroked-button
+        [disabled]="!data.detectPlanningChanges && store.isDeletingSerie()"
+        (click)="onCancel()"
+      >
         {{ data.cancelText || 'Cancelar' }}
       </button>
     </mat-dialog-actions>
@@ -35,7 +44,7 @@ import { SeriesAndShotsStore } from '../../+state/series-and-shots.store';
 })
 export class ConfirmDeleteSerieDialog {
   readonly dialogRef = inject(MatDialogRef<ConfirmDeleteSerieDialog>);
-  readonly data = inject<ConfirmDialogData & { serieId: string }>(MAT_DIALOG_DATA);
+  readonly data = inject<ConfirmDialogData & { serieId: string; detectPlanningChanges?: boolean }>(MAT_DIALOG_DATA);
   protected readonly store = inject(SeriesAndShotsStore);
   readonly #deleteConfirmed = signal(false);
 
@@ -49,6 +58,10 @@ export class ConfirmDeleteSerieDialog {
   }
 
   onConfirm(): void {
+    if (this.data.detectPlanningChanges) {
+      this.dialogRef.close(true);
+      return;
+    }
     this.#deleteConfirmed.set(true);
     this.store.deleteSerie(this.data.serieId);
   }

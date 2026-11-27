@@ -6,6 +6,7 @@ import {
   inject,
   input,
   linkedSignal,
+  output,
   signal,
 } from '@angular/core';
 import { applyEach, disabled, form, validate } from '@angular/forms/signals';
@@ -21,6 +22,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { MeasuresStore } from '../../+state/measures.store';
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
 import { SeriesAndShotsStore } from '../../+state/series-and-shots.store';
+import type { PlanningFormSnapshotEvent } from '../../models/planning-shell.model';
 import type {
   MagnitudesOptions,
   MeasureSelectionData,
@@ -203,7 +205,7 @@ import { mapCatalogToMagnitudesOptions, mapLocalToRequest, mapResponseToLocal } 
         }
 
         <div class="flex justify-end gap-3 mt-6">
-          @if (!readonly()) {
+          @if (!readonly() && !detectPlanningChanges()) {
             <button mat-flat-button [disabled]="hasToBeDisabled()" (click)="save()">
               @if (isSaving()) {
                 <mat-icon class="animate-spin mr-2">sync</mat-icon>
@@ -229,6 +231,8 @@ import { mapCatalogToMagnitudesOptions, mapLocalToRequest, mapResponseToLocal } 
 export class Measures {
   /** Si true, el componente está en modo solo lectura (el usuario no puede editar) */
   readonly readonly = input<boolean>(false);
+  readonly detectPlanningChanges = input<boolean>(false);
+  readonly formSnapshotChanged = output<PlanningFormSnapshotEvent>();
 
   readonly #measuresStore = inject(MeasuresStore);
   readonly #planningGeneralDataStore = inject(PlanningGeneralDataStore);
@@ -384,6 +388,16 @@ export class Measures {
         this.#measuresStore.resetRemoveFavorite();
       }
     });
+
+    effect(() => {
+      if (!this.detectPlanningChanges() || this.isLoadingView() || this.viewError()) return;
+      this.formSnapshotChanged.emit({
+        section: 'measures',
+        baseline: { series: this.#initialSeriesData(), seriesConfiguration: false },
+        current: { series: this.seriesSignal(), seriesConfiguration: this.seriesConfiguration() },
+        valid: this.seriesForm().valid(),
+      });
+    });
   }
 
   seriesForm = form(this.seriesSignal, (formPath) => {
@@ -515,7 +529,7 @@ export class Measures {
   }
 
   onToggleFavorite(event: { id: string; isFavorite: boolean }): void {
-    if (this.readonly()) {
+    if (this.readonly() || this.detectPlanningChanges()) {
       return;
     }
     if (event.isFavorite) {
@@ -534,7 +548,7 @@ export class Measures {
   }
 
   save(): void {
-    if (this.readonly()) {
+    if (this.readonly() || this.detectPlanningChanges()) {
       return;
     }
     if (!this.seriesForm().valid()) {

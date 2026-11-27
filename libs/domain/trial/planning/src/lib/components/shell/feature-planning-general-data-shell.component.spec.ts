@@ -1,16 +1,18 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
+import { By } from '@angular/platform-browser';
 import { provideTestingEnvironment } from '@intaqalab/config';
 import { AuthService, Role } from '@intaqalab/core';
 import { type TrialCreateModifyForm, TrialStatus } from '@intaqalab/models';
 import { createMockPlanningGeneralDataStore, createTrial } from '@intaqalab/utils';
 import { provideTranslateService } from '@ngx-translate/core';
-import { render, screen } from '@testing-library/angular';
+import { render, screen, waitFor } from '@testing-library/angular';
+import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { PlanningGeneralDataStore } from '../../+state/planning-general-data.store';
-import type { PlanningFieldChangeEvent, PlanningShellMode } from '../../models/planning-shell.model';
+import type { PlanningShellMode } from '../../models/planning-shell.model';
 import { FeaturePlanningGeneralDataShellComponent } from './feature-planning-general-data-shell.component';
 
 interface SetupOptions {
@@ -20,7 +22,6 @@ interface SetupOptions {
   trial?: TrialCreateModifyForm;
   trialId?: string;
   executedShotIds?: ReadonlyArray<string>;
-  onPlanningFieldChanged?: (event: PlanningFieldChangeEvent) => void;
 }
 
 describe('FeaturePlanningGeneralDataShellComponent', () => {
@@ -55,7 +56,6 @@ describe('FeaturePlanningGeneralDataShellComponent', () => {
         ...(options.trialId !== undefined ? { trialId: options.trialId } : {}),
         ...(options.executedShotIds !== undefined ? { executedShotIds: options.executedShotIds } : {}),
       },
-      on: options.onPlanningFieldChanged ? { planningFieldChanged: options.onPlanningFieldChanged } : undefined,
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -90,6 +90,31 @@ describe('FeaturePlanningGeneralDataShellComponent', () => {
   it('should render the general data tab', async () => {
     await runSetup();
     expect(screen.getByRole('tab', { name: /TRIAL_PLANNING.GENERAL_DATA_SECTION.TAB_TITLE/i })).toBeInTheDocument();
+  });
+
+  it.each([
+    ['TRIAL_PLANNING.SERIES_AND_SHOTS_SECTION.TAB_TITLE', 'inta-series-and-shots'],
+    ['TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TITLE', 'inta-shooting-conditions'],
+    ['TRIAL_PLANNING.MUNITIONS.TITLE', 'inta-munitions'],
+    ['TRIAL_PLANNING.ARMAMENT.TITLE', 'inta-armament'],
+    ['TRIAL_PLANNING.MEASURES.TITLE', 'inta-measures'],
+  ])('should mount lazy planning section %s only after selecting its tab', async (label, selector) => {
+    const user = userEvent.setup();
+    const { view } = await runSetup({
+      mode: 'planning',
+      storeOverrides: {
+        planningInfo: planningInfoFixture,
+        series: [{ id: 'series-1', shotQuantity: 1, shots: [{ id: 'shot-1' }] }],
+      },
+    });
+
+    expect(view.fixture.debugElement.query(By.css(selector))).toBeNull();
+
+    await user.click(screen.getByRole('tab', { name: label }));
+
+    await waitFor(() => {
+      expect(view.fixture.debugElement.query(By.css(selector))).not.toBeNull();
+    });
   });
 
   it('should keep shooting conditions tab disabled when there are no series with shots', async () => {
@@ -150,6 +175,31 @@ describe('FeaturePlanningGeneralDataShellComponent', () => {
       expect(screen.getByRole('tablist')).toBeInTheDocument();
     });
 
+    it('should keep all planning sections accessible while collecting execution changes', async () => {
+      await runSetup({
+        mode: 'execution-modification',
+        roles: [Role.INTAQALAB_TRIAL_ENGINEER],
+        storeOverrides: {
+          fireTrial: { ...createTrial(), status: TrialStatus.INTERRUPTED },
+          planningInfo: planningInfoFixture,
+          series: [],
+        },
+      });
+
+      const sectionLabels = [
+        'TRIAL_PLANNING.GENERAL_DATA_SECTION.TAB_TITLE',
+        'TRIAL_PLANNING.SERIES_AND_SHOTS_SECTION.TAB_TITLE',
+        'TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.TITLE',
+        'TRIAL_PLANNING.MUNITIONS.TITLE',
+        'TRIAL_PLANNING.ARMAMENT.TITLE',
+        'TRIAL_PLANNING.MEASURES.TITLE',
+      ];
+
+      for (const label of sectionLabels) {
+        expect(screen.getByRole('tab', { name: new RegExp(label) })).toHaveAttribute('aria-disabled', 'false');
+      }
+    });
+
     it('should NOT be readonly for Trial Engineer when trial status is INTERRUPTED', async () => {
       const { view } = await runSetup({
         mode: 'execution-modification',
@@ -190,52 +240,6 @@ describe('FeaturePlanningGeneralDataShellComponent', () => {
 
       expect(view.fixture.componentInstance.isShotReadonly('shot-1')).toBe(true);
       expect(view.fixture.componentInstance.isShotReadonly('shot-2')).toBe(false);
-    });
-
-    it('should emit planningFieldChanged when notifyFieldChange is called in execution-modification mode', async () => {
-      const onFieldChanged = vi.fn();
-      const { view } = await runSetup({
-        mode: 'execution-modification',
-        roles: [Role.INTAQALAB_TRIAL_ENGINEER],
-        storeOverrides: { fireTrial: { ...createTrial(), status: TrialStatus.INTERRUPTED } },
-        onPlanningFieldChanged: onFieldChanged,
-      });
-
-      const event: PlanningFieldChangeEvent = {
-        section: 'shooting-conditions',
-        parameter: 'elevation',
-        action: 'Modificación',
-        previousValue: 10,
-        newValue: 20,
-        affectedShots: ['shot-2'],
-      };
-
-      view.fixture.componentInstance.notifyFieldChange(event);
-
-      expect(onFieldChanged).toHaveBeenCalledExactlyOnceWith(event);
-    });
-
-    it('should NOT emit planningFieldChanged when notifyFieldChange is called in planning mode', async () => {
-      const onFieldChanged = vi.fn();
-      const { view } = await runSetup({
-        mode: 'planning',
-        roles: [Role.INTAQALAB_ADMIN],
-        storeOverrides: { fireTrial: { ...createTrial(), status: TrialStatus.UNDER_REVIEW } },
-        onPlanningFieldChanged: onFieldChanged,
-      });
-
-      const event: PlanningFieldChangeEvent = {
-        section: 'general-data',
-        parameter: 'goal',
-        action: 'Modificación',
-        previousValue: 'Old',
-        newValue: 'New',
-        affectedShots: null,
-      };
-
-      view.fixture.componentInstance.notifyFieldChange(event);
-
-      expect(onFieldChanged).not.toHaveBeenCalled();
     });
   });
 

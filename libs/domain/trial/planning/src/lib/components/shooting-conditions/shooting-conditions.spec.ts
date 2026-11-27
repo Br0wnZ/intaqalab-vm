@@ -1,7 +1,9 @@
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import type { ComponentFixture } from '@angular/core/testing';
 import { MatSelectHarness } from '@angular/material/select/testing';
+import { By } from '@angular/platform-browser';
 import { provideTestingEnvironment } from '@intaqalab/config';
+import { InputSelect } from '@intaqalab/ui';
 import {
   createMockPlanningGeneralDataStore,
   createMockResource,
@@ -148,6 +150,44 @@ describe('ShootingConditionsComponent', () => {
       await waitFor(() => {
         expect(screen.getByText('TRIAL_PLANNING.SHOOTING_CONDITIONS_SECTION.EMPTY_STATE')).toBeInTheDocument();
       });
+    });
+  });
+
+  describe('Planning change detection inputs', () => {
+    it('should preserve exact numeric values from the shared input-select control', () => {
+      const before = component.seriesSignal()[0]?.shots[0]?.elevation;
+      component.onShotFieldChange(0, 0, 'elevation', { value: '12.3456789', unit: 'DEGREES' });
+
+      expect(component.seriesSignal()[0]?.shots[0]?.elevation).toBe(12.3456789);
+      expect(component.seriesSignal()[0]?.shots[0]?.elevation).not.toBe(before);
+    });
+
+    it('should not turn an empty numeric edit into zero', () => {
+      const before = component.seriesSignal()[0]?.shots[0]?.elevation;
+      component.onShotFieldChange(0, 0, 'elevation', { value: null, unit: 'DEGREES' });
+
+      expect(component.seriesSignal()[0]?.shots[0]?.elevation).toBe(before);
+    });
+
+    it('should ignore edits to a shot that has already been executed during a modification session', () => {
+      const shot = component.seriesSignal()[0]?.shots[0];
+      if (!shot) throw new Error('Expected a loaded shot');
+      fixture.componentRef.setInput('detectPlanningChanges', true);
+      fixture.componentRef.setInput('executedShotIds', [shot.shotId]);
+      fixture.detectChanges();
+
+      const rows = fixture.debugElement.queryAll(By.css('tr[mat-row]'));
+      const firedShotInputSelects = rows[0]?.queryAll(By.directive(InputSelect)) ?? [];
+      const nextShotInputSelects = rows[1]?.queryAll(By.directive(InputSelect)) ?? [];
+      expect(firedShotInputSelects.length).toBeGreaterThan(0);
+      expect(firedShotInputSelects.every((input) => input.injector.get(InputSelect).disabled())).toBe(true);
+      expect(nextShotInputSelects.every((input) => !input.injector.get(InputSelect).disabled())).toBe(true);
+
+      component.onShotFieldChange(0, 0, 'elevation', { value: '99', unit: 'DEGREES' });
+      component.onTargetTypeChange(0, 0, 'new-target-type');
+
+      expect(component.seriesSignal()[0]?.shots[0]?.elevation).toBe(shot.elevation);
+      expect(component.seriesSignal()[0]?.shots[0]?.targetTypeId).toBe(shot.targetTypeId);
     });
   });
 

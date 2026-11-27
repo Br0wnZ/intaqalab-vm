@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { Injector, inject, signal, Service } from '@angular/core';
+import { Injector, Service, inject, signal } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
 
 import type {
@@ -24,7 +24,7 @@ export class ArmamentCatalogService {
     return {
       url: planningUrl(this.#planningUrl, 'equipment', 'items'),
       method: 'GET',
-      params: { itemType: p.itemType },
+      params: { itemType: p.itemType, status: 'IN_USE' },
     };
   });
 

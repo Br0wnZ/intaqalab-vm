@@ -289,6 +289,7 @@ export class ArmamentRow implements OnInit {
   }
 
   onWeaponTypeChange(itemType: string | null | undefined): void {
+    if (this.readonly()) return;
     this.#updateShotArmament({
       weaponExternalId: '',
       weaponName: '',
@@ -308,6 +309,7 @@ export class ArmamentRow implements OnInit {
   }
 
   onWeaponChange(weaponId: string | null | undefined): void {
+    if (this.readonly()) return;
     this.#updateShotArmament({
       tubeExternalId: '',
       tubeName: '',
@@ -339,6 +341,7 @@ export class ArmamentRow implements OnInit {
   }
 
   #updateShotArmament(patch: Partial<ArmamentSerieShotDetail>): void {
+    if (this.readonly()) return;
     this.shot.update((currentShot) => ({
       ...currentShot,
       armament: {

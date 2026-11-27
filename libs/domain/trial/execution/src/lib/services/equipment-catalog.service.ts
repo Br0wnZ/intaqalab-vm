@@ -1,9 +1,9 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Service } from '@angular/core';
+import { Service, inject } from '@angular/core';
 import { injectPlanningEndpoint } from '@intaqalab/config';
 import { catchError, firstValueFrom, map, tap } from 'rxjs';
 
-import type { EquipmentTypeEnum } from '../execution/models';
+import { EquipmentTypeEnum } from '../execution/models';
 
 export interface EquipmentOption {
   readonly id: string;
@@ -44,7 +44,13 @@ export class EquipmentCatalogService {
 
     const request$ = this.#httpClient
       .get<EquipmentItemsApiResponse>(`${this.#planningUrl}/equipment/items`, {
-        params: { categoryId: category },
+        params: {
+          categoryId: category,
+          status: 'IN_USE',
+          ...(category === EquipmentTypeEnum.DOPPLER_RADAR || category === EquipmentTypeEnum.BALANCE
+            ? { itemType: ['STANDARD'] }
+            : {}),
+        },
       })
       .pipe(
         map((response) =>
